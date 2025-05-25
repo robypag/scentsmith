@@ -13,7 +13,7 @@ export default function Assistant() {
         <div className="space-y-4">
           <div className="p-4 rounded-lg bg-muted">
             <p className="text-sm">
-              Hello! I'm your AI assistant for fragrance analysis. You can ask me about:
+              Hello! I&apos;m your AI assistant for fragrance analysis. You can ask me about:
             </p>
             <ul className="mt-2 text-sm list-disc list-inside space-y-1">
               <li>Fragrance note analysis</li>
