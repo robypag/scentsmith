@@ -1,15 +1,35 @@
-import { Settings, Database, Brain } from "lucide-react";
+import { Settings, Brain, TextSearchIcon, TestTube, Beaker, BarChart3, Shield } from "lucide-react";
 
 export const mainNavigationItems = [
     {
         title: "Dashboard",
         url: "/dashboard",
-        icon: Database,
+        icon: BarChart3,
+    },
+    {
+        title: "Formulae",
+        url: "/formulae",
+        icon: TestTube,
+    },
+    {
+        title: "Ingredients",
+        url: "/ingredients",
+        icon: Beaker,
     },
     {
         title: "AI Assistant",
         url: "/assistant",
         icon: Brain,
+    },
+    {
+        title: "Documents",
+        url: "/documents",
+        icon: TextSearchIcon,
+    },
+    {
+        title: "Compliance",
+        url: "/compliance",
+        icon: Shield,
     },
 ];
 
@@ -42,66 +62,66 @@ export const headerNavigationItems = [
 
 export const dashboardStats = [
     {
-        id: "total-fragrances",
-        title: "Total Fragrances",
+        id: "active-formulae",
+        title: "Active Formulae",
         value: 124,
-        change: "+20%",
+        change: "+8",
+        changeDescription: "new this month",
+    },
+    {
+        id: "ingredients-stock",
+        title: "Ingredients in Stock",
+        value: 347,
+        change: "+23",
         changeDescription: "from last month",
     },
     {
-        id: "ai-analyses",
-        title: "AI Analyses",
-        value: 89,
-        change: "+15%",
-        changeDescription: "from last month",
+        id: "compliance-alerts",
+        title: "Compliance Alerts",
+        value: 3,
+        change: "-5",
+        changeDescription: "resolved this week",
     },
     {
-        id: "collections",
-        title: "Collections",
+        id: "expiring-formulae",
+        title: "Expiring Soon",
         value: 12,
-        change: "+2",
-        changeDescription: "new this week",
-    },
-    {
-        id: "recommendations",
-        title: "Recommendations",
-        value: 47,
         change: "",
-        changeDescription: "Based on your preferences",
+        changeDescription: "Next 30 days",
     },
 ];
 
 export const featureCards = [
     {
-        id: "fragrance-analysis",
-        title: "Fragrance Analysis",
-        description: "Analyze perfume compositions with AI-powered insights",
-        content: "Get detailed breakdowns of notes, longevity, and projection for any fragrance.",
-        href: "/analyze",
+        id: "formula-development",
+        title: "Formula Development",
+        description: "Create and manage perfume formulae with precision",
+        content: "Build complex formulae with ingredient tracking, percentage calculations, and compliance checks.",
+        href: "/formulae",
     },
     {
-        id: "collection-management",
-        title: "Collection Management",
-        description: "Organize and track your perfume collection",
-        content: "Keep detailed records of your fragrances with photos, notes, and ratings.",
-        href: "/dashboard",
+        id: "compliance-monitoring",
+        title: "Compliance Monitoring",
+        description: "Ensure regulatory compliance across all markets",
+        content: "AI-powered compliance checking against IFRA standards and regional regulations.",
+        href: "/compliance",
     },
     {
-        id: "ai-recommendations",
-        title: "AI Recommendations",
-        description: "Discover new fragrances based on your preferences",
-        content: "Get personalized recommendations using advanced vector similarity search.",
-        href: "/recommendations",
+        id: "ingredient-insights",
+        title: "Ingredient Insights",
+        description: "Advanced analytics on ingredient usage and trends",
+        content: "Track ingredient costs, usage patterns, and discover optimization opportunities.",
+        href: "/ingredients",
     },
 ];
 
 export const mockUser = {
     id: "1",
-    name: "Alex Johnson",
+    name: "Dr. Alex Johnson",
     email: "demo@smellsmith.com",
     avatar: "/avatar-placeholder.png", // Local fallback instead of external URL
     initials: "AJ",
-    role: "Premium User",
+    role: "Master Perfumer",
     joinedAt: "2024-01-15",
     preferences: {
         theme: "light",

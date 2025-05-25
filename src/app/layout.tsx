@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { AppLayout } from "@/components/layout/app-layout";
 import { Providers } from "@/components/providers/session-provider";
@@ -11,14 +11,10 @@ const themeScript = `
   })();
 `;
 
-const geistSans = Geist({
-    variable: "--font-geist-sans",
-    subsets: ["latin"],
-});
-
 const geistMono = Geist_Mono({
     variable: "--font-geist-mono",
     subsets: ["latin"],
+    display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -36,7 +32,7 @@ export default function RootLayout({
             <head>
                 <script dangerouslySetInnerHTML={{ __html: themeScript }} />
             </head>
-            <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+            <body className={`${geistMono.className} antialiased`}>
                 <Providers>
                     <AppLayout>{children}</AppLayout>
                 </Providers>
