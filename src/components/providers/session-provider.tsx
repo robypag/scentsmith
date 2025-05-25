@@ -1,0 +1,22 @@
+"use client"
+
+import { SessionProvider } from "next-auth/react"
+import { ThemeProvider } from "./theme-provider"
+import { ReactNode } from "react"
+
+interface ProvidersProps {
+  children: ReactNode
+}
+
+export function Providers({ children }: ProvidersProps) {
+  return (
+    <SessionProvider>
+      <ThemeProvider
+        defaultTheme="light"
+        storageKey="smellsmith-ui-theme"
+      >
+        {children}
+      </ThemeProvider>
+    </SessionProvider>
+  )
+}
