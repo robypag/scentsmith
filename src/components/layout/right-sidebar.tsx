@@ -11,9 +11,8 @@ export function RightSidebar() {
   return (
     <aside
       className={cn(
-        "flex flex-col h-full w-80 bg-sidebar border-l border-sidebar-border transition-all duration-200 ease-in-out",
-        isOpen ? "translate-x-0" : "translate-x-full hidden",
-        "md:block"
+        "flex flex-col h-full w-80 bg-sidebar border-l border-sidebar-border transition-all duration-200 ease-in-out shadow-lg",
+        isOpen ? "translate-x-0" : "translate-x-full"
       )}
     >
       {/* Header */}
