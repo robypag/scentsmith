@@ -16,7 +16,7 @@ export function AppLayout({ children }: AppLayoutProps) {
                 <Navbar />
                 <div className="flex flex-1 overflow-hidden">
                     <AppSidebar />
-                    <main className="flex-1 overflow-auto bg-background">
+                    <main className="flex-1 overflow-auto bg-gray-50 dark:bg-gray-900">
                         <div className="container mx-auto p-6 max-w-7xl">{children}</div>
                     </main>
                     <RightSidebar />

@@ -12,7 +12,10 @@ export function Providers({ children }: ProvidersProps) {
   return (
     <SessionProvider>
       <ThemeProvider
+        attribute="class"
         defaultTheme="light"
+        enableSystem
+        disableTransitionOnChange={false}
         storageKey="smellsmith-ui-theme"
       >
         {children}

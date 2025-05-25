@@ -37,7 +37,7 @@ export default function SignIn() {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
             <Card className="w-[400px]">
                 <CardHeader>
                     <CardTitle>Sign In to SmellSmith</CardTitle>

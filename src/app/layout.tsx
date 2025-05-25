@@ -4,6 +4,13 @@ import "./globals.css";
 import { AppLayout } from "@/components/layout/app-layout";
 import { Providers } from "@/components/providers/session-provider";
 
+const themeScript = `
+  (function() {
+    const theme = localStorage.getItem('smellsmith-ui-theme') || 'light';
+    document.documentElement.classList.add(theme);
+  })();
+`;
+
 const geistSans = Geist({
     variable: "--font-geist-sans",
     subsets: ["latin"],
@@ -25,7 +32,10 @@ export default function RootLayout({
     children: React.ReactNode;
 }>) {
     return (
-        <html lang="en">
+        <html lang="en" suppressHydrationWarning>
+            <head>
+                <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+            </head>
             <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
                 <Providers>
                     <AppLayout>{children}</AppLayout>

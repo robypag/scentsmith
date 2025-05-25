@@ -16,7 +16,7 @@ export function AppSidebar() {
     return (
         <aside
             className={cn(
-                "flex flex-col h-full bg-sidebar border-r border-sidebar-border transition-all duration-200 ease-in-out relative",
+                "flex flex-col h-full bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700 transition-all duration-300 ease-in-out relative shadow-lg",
                 isOpen ? "w-64" : "w-16",
                 "md:relative md:translate-x-0",
                 !isOpen && "absolute -translate-x-full md:translate-x-0",
@@ -25,7 +25,7 @@ export function AppSidebar() {
             {/* User Header */}
             <div
                 className={cn(
-                    "flex items-center p-4 border-b border-sidebar-border bg-sidebar",
+                    "flex items-center p-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800",
                     !isOpen && "justify-center p-2",
                 )}
             >
@@ -33,8 +33,8 @@ export function AppSidebar() {
                     <div className="flex items-center space-x-3 min-w-0">
                         <Avatar fallback={mockUser.initials} size="md" />
                         <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium text-sidebar-foreground truncate">{mockUser.name}</p>
-                            <p className="text-xs text-sidebar-foreground/70 truncate">{mockUser.email}</p>
+                            <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">{mockUser.name}</p>
+                            <p className="text-xs text-yellow-600 dark:text-yellow-400 truncate">{mockUser.email}</p>
                         </div>
                     </div>
                 ) : (
@@ -53,10 +53,10 @@ export function AppSidebar() {
                             key={item.title}
                             href={item.url}
                             className={cn(
-                                "flex items-center space-x-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
+                                "flex items-center space-x-3 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-300 relative group",
                                 isActive
-                                    ? "bg-sidebar-primary text-sidebar-primary-foreground"
-                                    : "text-sidebar-foreground hover:text-sidebar-accent-foreground hover:bg-sidebar-accent",
+                                    ? "bg-yellow-500 text-white shadow-md border border-yellow-600"
+                                    : "text-gray-700 dark:text-gray-200 hover:text-yellow-600 dark:hover:text-yellow-400 hover:bg-yellow-50 dark:hover:bg-yellow-900/20 hover:shadow-sm border border-transparent",
                                 !isOpen && "justify-center space-x-0",
                             )}
                             title={!isOpen ? item.title : undefined}
@@ -69,7 +69,7 @@ export function AppSidebar() {
             </nav>
 
             {/* Settings Navigation */}
-            <div className="p-4 space-y-2 border-t border-sidebar-border">
+            <div className="p-4 space-y-2 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
                 {settingsNavigationItems.map((item) => {
                     const isActive = pathname === item.url;
                     const Icon = item.icon;
@@ -79,10 +79,10 @@ export function AppSidebar() {
                             key={item.title}
                             href={item.url}
                             className={cn(
-                                "flex items-center space-x-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
+                                "flex items-center space-x-3 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-300 relative group",
                                 isActive
-                                    ? "bg-sidebar-primary text-sidebar-primary-foreground"
-                                    : "text-sidebar-foreground hover:text-sidebar-accent-foreground hover:bg-sidebar-accent",
+                                    ? "bg-amber-600 text-white shadow-md border border-amber-700"
+                                    : "text-gray-700 dark:text-gray-200 hover:text-amber-600 dark:hover:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/20 hover:shadow-sm border border-transparent",
                                 !isOpen && "justify-center space-x-0",
                             )}
                             title={!isOpen ? item.title : undefined}
@@ -95,15 +95,15 @@ export function AppSidebar() {
             </div>
 
             {/* Footer / Collapse Toggle */}
-            <div className={cn("p-4 border-t border-sidebar-border", !isOpen && "p-2")}>
+            <div className={cn("p-4 border-t border-gray-200 dark:border-gray-700 bg-gradient-to-r from-yellow-50 via-amber-50 to-yellow-50 dark:from-yellow-900/20 dark:via-amber-900/20 dark:to-yellow-900/20", !isOpen && "p-2")}>
                 {isOpen ? (
                     <div className="flex items-center justify-between">
-                        <p className="text-xs text-sidebar-foreground/70">Perfume Analysis Platform</p>
+                        <p className="text-xs text-yellow-600 dark:text-yellow-400 font-medium tracking-wide">Perfume Analysis Platform</p>
                         <Button
-                            variant="ghost"
+                            variant="luxury-ghost"
                             size="icon"
                             onClick={toggle}
-                            className="h-6 w-6 text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent"
+                            className="h-6 w-6 text-yellow-600 dark:text-yellow-400 hover:text-yellow-800 dark:hover:text-yellow-300 hover:bg-yellow-100 dark:hover:bg-yellow-900/30"
                         >
                             <ChevronLeft className="h-3 w-3" />
                         </Button>
@@ -111,10 +111,10 @@ export function AppSidebar() {
                 ) : (
                     <div className="flex justify-center">
                         <Button
-                            variant="ghost"
+                            variant="luxury-ghost"
                             size="icon"
                             onClick={toggle}
-                            className="h-6 w-6 text-sidebar-foreground/70 hover:text-sidebar-foreground hover:bg-sidebar-accent"
+                            className="h-6 w-6 text-yellow-600 dark:text-yellow-400 hover:text-yellow-800 dark:hover:text-yellow-300 hover:bg-yellow-100 dark:hover:bg-yellow-900/30"
                         >
                             <ChevronRight className="h-3 w-3" />
                         </Button>

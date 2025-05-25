@@ -15,6 +15,33 @@ function Card({ className, ...props }: React.ComponentProps<"div">) {
   )
 }
 
+function LuxuryCard({ className, ...props }: React.ComponentProps<"div">) {
+  return (
+    <div
+      data-slot="luxury-card"
+      className={cn(
+        "bg-gradient-to-br from-card via-card to-champagne/20 text-card-foreground flex flex-col gap-6 rounded-xl border border-gold/20 py-6 shadow-gold-subtle hover:shadow-gold transition-all duration-300 backdrop-blur-sm",
+        className
+      )}
+      {...props}
+    />
+  )
+}
+
+function PremiumCard({ className, ...props }: React.ComponentProps<"div">) {
+  return (
+    <div
+      data-slot="premium-card"
+      className={cn(
+        "bg-gradient-luxury text-card-foreground flex flex-col gap-6 rounded-xl border-2 border-gold/30 py-6 shadow-luxury hover:border-gold/50 transition-all duration-500 relative overflow-hidden",
+        "before:absolute before:inset-0 before:bg-gradient-to-r before:from-transparent before:via-gold/5 before:to-transparent before:translate-x-[-100%] hover:before:translate-x-[100%] before:transition-transform before:duration-1000",
+        className
+      )}
+      {...props}
+    />
+  )
+}
+
 function CardHeader({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
@@ -83,6 +110,8 @@ function CardFooter({ className, ...props }: React.ComponentProps<"div">) {
 
 export {
   Card,
+  LuxuryCard,
+  PremiumCard,
   CardHeader,
   CardFooter,
   CardTitle,
