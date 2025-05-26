@@ -1,20 +1,10 @@
-export interface Document {
+export interface DocumentDTO {
     id: string;
     title: string;
-    content: string;
     type: string;
+    summarization: string | null;
+    tags: string | undefined;
     uploadedBy: string;
-    fileUrl: string;
-    metadata: {
-        region?: string;
-        authority?: string;
-        version?: string;
-        quarter?: string;
-        supplier?: string;
-        casNumber?: string;
-    };
-    tags: string[];
-    embedding: null;
-    createdAt: Date;
     updatedAt: Date;
+    createdAt: Date;
 }

@@ -1,17 +1,28 @@
 "use client";
 
 import { useLeftSidebar } from "@/hooks/use-sidebar-states";
-import { mainNavigationItems, settingsNavigationItems, mockUser } from "@/lib/mock-data/navigation";
+import { mainNavigationItems, settingsNavigationItems } from "@/lib/mock-data/navigation";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Avatar } from "@/components/ui/avatar";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useSession } from "next-auth/react";
 
 export function AppSidebar() {
     const { isOpen, toggle } = useLeftSidebar();
     const pathname = usePathname();
+    const { data: session } = useSession();
+
+    const user = session?.user;
+    const userInitials = user?.name
+        ? user.name
+              .split(" ")
+              .map((n) => n[0])
+              .join("")
+              .toUpperCase()
+        : user?.email?.[0]?.toUpperCase() || "U";
 
     return (
         <aside
@@ -31,14 +42,16 @@ export function AppSidebar() {
             >
                 {isOpen ? (
                     <div className="flex items-center space-x-3 min-w-0">
-                        <Avatar fallback={mockUser.initials} size="md" />
+                        <Avatar fallback={userInitials} size="md" />
                         <div className="flex-1 min-w-0">
-                            <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">{mockUser.name}</p>
-                            <p className="text-xs text-yellow-600 dark:text-yellow-400 truncate">{mockUser.email}</p>
+                            <p className="text-sm font-semibold text-gray-900 dark:text-white truncate">
+                                {user?.name || "User"}
+                            </p>
+                            <p className="text-xs text-yellow-600 dark:text-yellow-400 truncate">{user?.email}</p>
                         </div>
                     </div>
                 ) : (
-                    <Avatar fallback={mockUser.initials} size="sm" />
+                    <Avatar fallback={userInitials} size="sm" />
                 )}
             </div>
 
@@ -95,10 +108,17 @@ export function AppSidebar() {
             </div>
 
             {/* Footer / Collapse Toggle */}
-            <div className={cn("p-4 border-t border-gray-200 dark:border-gray-700 bg-gradient-to-r from-yellow-50 via-amber-50 to-yellow-50 dark:from-yellow-900/20 dark:via-amber-900/20 dark:to-yellow-900/20", !isOpen && "p-2")}>
+            <div
+                className={cn(
+                    "p-4 border-t border-gray-200 dark:border-gray-700 bg-gradient-to-r from-yellow-50 via-amber-50 to-yellow-50 dark:from-yellow-900/20 dark:via-amber-900/20 dark:to-yellow-900/20",
+                    !isOpen && "p-2",
+                )}
+            >
                 {isOpen ? (
                     <div className="flex items-center justify-between">
-                        <p className="text-xs text-yellow-600 dark:text-yellow-400 font-medium tracking-wide">Perfume Analysis Platform</p>
+                        <p className="text-xs text-yellow-600 dark:text-yellow-400 font-medium tracking-wide">
+                            Perfume Analysis Platform
+                        </p>
                         <Button
                             variant="luxury-ghost"
                             size="icon"

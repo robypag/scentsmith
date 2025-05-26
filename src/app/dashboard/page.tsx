@@ -8,36 +8,6 @@ import { Sparkles, TrendingUp, Star, Award, Crown, Gem } from "lucide-react";
 export default function Dashboard() {
     return (
         <div className="space-y-8 py-4">
-            {/* Hero Section */}
-            <div className="relative space-y-4 p-8 rounded-2xl bg-gradient-to-br from-white via-yellow-50 to-amber-50 dark:from-gray-900 dark:via-yellow-900/20 dark:to-amber-900/20 border border-yellow-200 dark:border-yellow-700 shadow-xl shadow-yellow-500/10 overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-r from-yellow-100/50 via-transparent to-yellow-100/50 dark:from-yellow-900/30 dark:via-transparent dark:to-yellow-900/30 opacity-50" />
-                <div className="relative z-10">
-                    <div className="flex items-center space-x-3 mb-4">
-                        <Crown className="h-8 w-8 text-yellow-600 dark:text-yellow-400 animate-pulse" />
-                        <h1 className="text-4xl font-bold tracking-tight bg-gradient-to-r from-yellow-600 via-amber-600 to-yellow-600 bg-clip-text text-transparent">
-                            Master Perfumer Dashboard
-                        </h1>
-                    </div>
-                    <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl leading-relaxed">
-                        Welcome to your professional fragrance development platform. Manage formulae, track compliance,
-                        and optimize your perfume creations.
-                    </p>
-                    <div className="flex items-center space-x-4 mt-6">
-                        <Button
-                            variant="luxury"
-                            className="shadow-lg shadow-yellow-500/20 hover:shadow-xl hover:shadow-yellow-500/30"
-                        >
-                            <Sparkles className="h-4 w-4 mr-2" />
-                            Create New Formula
-                        </Button>
-                        <Button variant="luxury-outline">
-                            <TrendingUp className="h-4 w-4 mr-2" />
-                            View Analytics
-                        </Button>
-                    </div>
-                </div>
-            </div>
-
             {/* Stats Grid */}
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
                 {dashboardStats.map((stat, index) => (

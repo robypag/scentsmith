@@ -5,17 +5,17 @@ import { Button } from "@/components/ui/button";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Document } from "@/lib/db/schema";
-import { FileText, Download, ExternalLink, Calendar, User, Tag, ArrowLeft } from "lucide-react";
+import { FileText, Download, Calendar, User, Tag, ArrowLeft } from "lucide-react";
 import { DocumentSearch } from "./document-search";
 import { DocumentContent } from "./document-content";
 import { RelatedDocuments } from "./related-documents";
 import { SemanticSearch } from "./semantic-search";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { DocumentDTO } from "@/types/document";
 
 interface DocumentViewerProps {
-    document: Document;
+    document: DocumentDTO;
     onClose?: () => void;
 }
 
@@ -42,13 +42,25 @@ export function DocumentViewer({ document, onClose }: DocumentViewerProps) {
     const getDocumentTypeBadge = (type: string) => {
         switch (type) {
             case "legal":
-                return <Badge className="bg-slate-200 text-slate-800 hover:bg-slate-300 dark:bg-slate-700 dark:text-slate-200">Legal</Badge>;
+                return (
+                    <Badge className="bg-slate-200 text-slate-800 hover:bg-slate-300 dark:bg-slate-700 dark:text-slate-200">
+                        Legal
+                    </Badge>
+                );
             case "sds":
-                return <Badge className="bg-amber-600 text-white hover:bg-amber-700 dark:bg-amber-700 dark:hover:bg-amber-800">SDS</Badge>;
+                return (
+                    <Badge className="bg-amber-600 text-white hover:bg-amber-700 dark:bg-amber-700 dark:hover:bg-amber-800">
+                        SDS
+                    </Badge>
+                );
             case "formula":
                 return <Badge className="bg-gold text-gold-foreground hover:bg-gold/80">Formula</Badge>;
             case "research":
-                return <Badge className="bg-pink-200 text-pink-800 hover:bg-pink-300 dark:bg-pink-800 dark:text-pink-200">Research</Badge>;
+                return (
+                    <Badge className="bg-pink-200 text-pink-800 hover:bg-pink-300 dark:bg-pink-800 dark:text-pink-200">
+                        Research
+                    </Badge>
+                );
             default:
                 return <Badge variant="secondary">{type}</Badge>;
         }
@@ -73,7 +85,7 @@ export function DocumentViewer({ document, onClose }: DocumentViewerProps) {
                                     </span>
                                     <span className="flex items-center gap-1">
                                         <User className="w-3 h-3" />
-                                        Uploaded by User
+                                        Uploaded by {document.uploadedBy || "Anonymous"}
                                     </span>
                                 </div>
                             </CardDescription>
@@ -87,12 +99,6 @@ export function DocumentViewer({ document, onClose }: DocumentViewerProps) {
                                 <Download className="w-3 h-3 mr-1" />
                                 Download
                             </Button>
-                            {document.fileUrl && (
-                                <Button variant="outline" size="sm">
-                                    <ExternalLink className="w-3 h-3 mr-1" />
-                                    Open File
-                                </Button>
-                            )}
                         </div>
                     </div>
                 </CardHeader>
@@ -103,7 +109,7 @@ export function DocumentViewer({ document, onClose }: DocumentViewerProps) {
                     <Tabs defaultValue="content" className="flex-1 flex flex-col">
                         <div className="flex-shrink-0 px-6 pt-4">
                             <TabsList>
-                                <TabsTrigger value="content">Content</TabsTrigger>
+                                <TabsTrigger value="content">Summary</TabsTrigger>
                                 <TabsTrigger value="metadata">Metadata</TabsTrigger>
                                 <TabsTrigger value="search">Semantic Search</TabsTrigger>
                             </TabsList>
@@ -112,7 +118,10 @@ export function DocumentViewer({ document, onClose }: DocumentViewerProps) {
                         <TabsContent value="content" className="flex-1 flex flex-col px-6 pb-6 mt-4">
                             <div className="space-y-4 flex-1 flex flex-col">
                                 <DocumentSearch onSearch={handleSearch} onClearHighlights={handleClearHighlights} />
-                                <DocumentContent content={document.content} searchTerm={searchTerm} />
+                                <DocumentContent
+                                    content={document.summarization ?? "No summary available"}
+                                    searchTerm={searchTerm}
+                                />
                             </div>
                         </TabsContent>
 
@@ -137,14 +146,6 @@ export function DocumentViewer({ document, onClose }: DocumentViewerProps) {
                                             <span className="font-medium">Last Updated</span>
                                             <span>{new Date(document.updatedAt).toLocaleString()}</span>
                                         </div>
-                                        {document.fileUrl && (
-                                            <div className="flex justify-between py-2 border-b">
-                                                <span className="font-medium">File URL</span>
-                                                <span className="text-gold hover:underline cursor-pointer">
-                                                    {document.fileUrl}
-                                                </span>
-                                            </div>
-                                        )}
                                     </div>
                                 </div>
 
@@ -155,7 +156,7 @@ export function DocumentViewer({ document, onClose }: DocumentViewerProps) {
                                             Tags
                                         </h4>
                                         <div className="flex flex-wrap gap-2">
-                                            {document.tags.map((tag, index) => (
+                                            {document.tags.split(",").map((tag, index) => (
                                                 <Badge key={index} variant="outline">
                                                     {tag}
                                                 </Badge>
@@ -163,17 +164,6 @@ export function DocumentViewer({ document, onClose }: DocumentViewerProps) {
                                         </div>
                                     </div>
                                 )}
-
-                                {document.metadata ? (
-                                    <div>
-                                        <h4 className="font-medium mb-3">Additional Metadata</h4>
-                                        <div className="bg-muted rounded-md p-4">
-                                            <pre className="text-xs text-muted-foreground whitespace-pre-wrap">
-                                                {JSON.stringify(document.metadata as Record<string, unknown>, null, 2)}
-                                            </pre>
-                                        </div>
-                                    </div>
-                                ) : null}
                             </div>
                         </TabsContent>
 

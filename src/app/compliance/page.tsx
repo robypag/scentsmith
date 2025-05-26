@@ -12,11 +12,11 @@ import {
 import { FileText } from "lucide-react";
 import { useState } from "react";
 import { ComplianceOverview } from "@/components/compliance/compliance-overview";
-import { 
-    ComplianceAlertsTab, 
-    ComplianceRegulationsTab, 
-    ComplianceReportsTab, 
-    ComplianceDocumentsTab 
+import {
+    ComplianceAlertsTab,
+    ComplianceRegulationsTab,
+    ComplianceReportsTab,
+    ComplianceDocumentsTab,
 } from "@/components/compliance/tabs";
 
 export default function CompliancePage() {
@@ -68,10 +68,7 @@ export default function CompliancePage() {
                 </TabsList>
 
                 <TabsContent value="alerts" className="space-y-4">
-                    <ComplianceAlertsTab
-                        complianceAlerts={mockAnalytics.complianceAlerts}
-                        formulae={mockFormulae}
-                    />
+                    <ComplianceAlertsTab complianceAlerts={mockAnalytics.complianceAlerts} formulae={mockFormulae} />
                 </TabsContent>
 
                 <TabsContent value="regulations" className="space-y-4">

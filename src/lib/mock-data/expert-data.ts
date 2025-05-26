@@ -158,42 +158,39 @@ export const mockDocuments = [
     {
         id: "doc-1",
         title: "IFRA Standards 50th Amendment",
-        content:
+        summarization:
             "Updated restrictions on various fragrance materials including new limits on rose oxide and bergamot oil in leave-on products...",
         type: "legal",
         uploadedBy: "1",
         fileUrl: "/documents/ifra-50th-amendment.pdf",
         metadata: { region: "global", authority: "IFRA", version: "50" },
         tags: ["ifra", "restrictions", "2024"],
-        embedding: null,
         createdAt: new Date("2024-01-05"),
         updatedAt: new Date("2024-01-05"),
     },
     {
         id: "doc-2",
         title: "EU Cosmetics Regulation Update Q1 2024",
-        content:
+        summarization:
             "New requirements for product information files and safety assessments for cosmetic products containing certain fragrance allergens...",
         type: "legal",
         uploadedBy: "1",
         fileUrl: "/documents/eu-cosmetics-q1-2024.pdf",
         metadata: { region: "EU", authority: "European Commission", quarter: "Q1-2024" },
         tags: ["eu", "cosmetics", "allergens", "pif"],
-        embedding: null,
         createdAt: new Date("2024-01-12"),
         updatedAt: new Date("2024-01-12"),
     },
     {
         id: "doc-3",
         title: "Bergamot Oil Safety Data Sheet",
-        content:
+        summarization:
             "Comprehensive safety information for bergamot oil including handling, storage, and phototoxicity warnings...",
         type: "sds",
         uploadedBy: "1",
         fileUrl: "/documents/bergamot-oil-sds.pdf",
         metadata: { supplier: "Firmenich", version: "3.2", casNumber: "8007-75-8" },
         tags: ["sds", "bergamot", "phototoxic", "safety"],
-        embedding: null,
         createdAt: new Date("2024-01-08"),
         updatedAt: new Date("2024-01-08"),
     },

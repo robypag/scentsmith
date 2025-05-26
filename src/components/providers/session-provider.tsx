@@ -2,6 +2,7 @@
 
 import { SessionProvider } from "next-auth/react"
 import { ThemeProvider } from "./theme-provider"
+import { Toaster } from "@/components/ui/sonner"
 import { ReactNode } from "react"
 
 interface ProvidersProps {
@@ -19,6 +20,7 @@ export function Providers({ children }: ProvidersProps) {
         storageKey="smellsmith-ui-theme"
       >
         {children}
+        <Toaster />
       </ThemeProvider>
     </SessionProvider>
   )

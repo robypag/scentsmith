@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
 import { Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { AppLayout } from "@/components/layout/app-layout";
+import { AuthenticatedLayout } from "@/components/layout/authenticated-layout";
 import { Providers } from "@/components/providers/session-provider";
 
 const themeScript = `
   (function() {
-    const theme = localStorage.getItem('smellsmith-ui-theme') || 'light';
+    const theme = localStorage.getItem('scentsmith-ui-theme') || 'light';
     document.documentElement.classList.add(theme);
   })();
 `;
@@ -18,7 +18,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-    title: "SmellSmith - Perfume Analysis Platform",
+    title: "ScentSmith - Perfume Analysis Platform",
     description: "AI-powered perfume analysis and fragrance discovery platform",
 };
 
@@ -34,7 +34,7 @@ export default function RootLayout({
             </head>
             <body className={`${geistMono.className} antialiased`}>
                 <Providers>
-                    <AppLayout>{children}</AppLayout>
+                    <AuthenticatedLayout>{children}</AuthenticatedLayout>
                 </Providers>
             </body>
         </html>

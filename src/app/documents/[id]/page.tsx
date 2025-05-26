@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { DocumentViewer } from "@/components/documents/document-viewer";
 import { mockDocuments } from "@/lib/mock-data/expert-data";
+import { loadDocument } from "@/lib/actions/documents";
 
 interface DocumentPageProps {
     params: Promise<{
@@ -10,7 +11,7 @@ interface DocumentPageProps {
 
 export default async function DocumentPage({ params }: DocumentPageProps) {
     const { id } = await params;
-    const document = mockDocuments.find((doc) => doc.id === id);
+    const document = await loadDocument(id);
 
     if (!document) {
         notFound();
