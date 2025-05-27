@@ -156,7 +156,7 @@ export function DocumentViewer({ document, onClose }: DocumentViewerProps) {
                                             Tags
                                         </h4>
                                         <div className="flex flex-wrap gap-2">
-                                            {document.tags.split(",").map((tag, index) => (
+                                            {(document.tags || []).map((tag, index) => (
                                                 <Badge key={index} variant="outline">
                                                     {tag}
                                                 </Badge>

@@ -1,10 +1,12 @@
-export interface DocumentDTO {
-    id: string;
-    title: string;
-    type: string;
-    summarization: string | null;
-    tags: string | undefined;
-    uploadedBy: string;
-    updatedAt: Date;
-    createdAt: Date;
-}
+import { z } from "zod";
+import { createSelectSchema, createInsertSchema } from "drizzle-zod";
+import { documents } from "@/lib/db/schema";
+
+// Generate Zod schemas from Drizzle table
+export const selectDocumentSchema = createSelectSchema(documents).extend({});
+export const insertDocumentSchema = createInsertSchema(documents);
+
+// Infer TypeScript types from Zod schemas
+export type DocumentDTO = z.infer<typeof selectDocumentSchema>;
+export type CreateDocumentDTO = z.infer<typeof insertDocumentSchema>;
+export type UpdateDocumentDTO = Partial<CreateDocumentDTO>;

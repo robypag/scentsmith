@@ -30,11 +30,11 @@ export function DocumentCard({ document, getDocumentTypeBadge, onDelete }: Docum
                 <div className="flex items-center gap-4 text-xs text-muted-foreground">
                     <span className="flex items-center gap-1">
                         <Calendar className="w-3 h-3" />
-                        {new Date(document.createdAt).toLocaleDateString()}
+                        {new Date(document.createdAt).toLocaleDateString("it-IT")}
                     </span>
                     <span className="flex items-center gap-1">
                         <Tag className="w-3 h-3" />
-                        {document.tags || "No Tags"}
+                        {document.tags?.join(",") || "No Tags"}
                     </span>
                 </div>
             </CardContent>

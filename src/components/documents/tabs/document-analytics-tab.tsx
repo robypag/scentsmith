@@ -2,10 +2,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { StatsCard } from "@/components/ui/stats-card";
 import { FileText, Calendar, Eye } from "lucide-react";
-import { Document } from "@/lib/db/schema";
+import { DocumentDTO } from "@/types/document";
+import Link from "next/link";
 
 interface DocumentAnalyticsTabProps {
-    documents: Document[];
+    documents: DocumentDTO[];
     getDocumentTypeBadge: (type: string) => React.ReactElement;
 }
 
@@ -44,21 +45,26 @@ export function DocumentAnalyticsTab({ documents, getDocumentTypeBadge }: Docume
                 <CardContent>
                     <div className="space-y-4">
                         {documents.slice(0, 5).map((doc) => (
-                            <div key={doc.id} className="flex items-center justify-between py-2 border-b">
+                            <div
+                                key={doc.id}
+                                className="flex items-center justify-between p-2 hover:bg-muted/35 rounded-sm"
+                            >
                                 <div className="flex items-center gap-3">
                                     <FileText className="w-4 h-4 text-muted-foreground" />
                                     <div>
                                         <p className="font-medium text-sm">{doc.title}</p>
                                         <p className="text-xs text-muted-foreground">
-                                            Updated {new Date(doc.updatedAt).toLocaleDateString()}
+                                            Updated {new Date(doc.updatedAt).toLocaleDateString("it-IT")}
                                         </p>
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-2">
                                     {getDocumentTypeBadge(doc.type)}
-                                    <Button variant="ghost" size="sm">
-                                        <Eye className="w-3 h-3" />
-                                    </Button>
+                                    <Link href={`/documents/${doc.id}`}>
+                                        <Button variant="outline" size="sm">
+                                            <Eye className="w-3 h-3" />
+                                        </Button>
+                                    </Link>
                                 </div>
                             </div>
                         ))}

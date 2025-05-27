@@ -12,7 +12,7 @@ import { DocumentDTO } from "@/types/document";
 export async function loadDocuments(): Promise<DocumentDTO[]> {
     try {
         const existingDocuments = await db.select().from(documents);
-        return existingDocuments.map((doc) => ({ ...doc, tags: doc.tags?.join(",") }));
+        return existingDocuments.map((doc) => ({ ...doc, tags: doc.tags, metadata: JSON.stringify(doc.metadata) }));
     } catch (error) {
         throw error instanceof Error ? error : new Error("Error, please try again.");
     }
@@ -23,7 +23,8 @@ export async function loadDocument(id: string): Promise<DocumentDTO> {
         const [existingDocument] = await db.select().from(documents).where(eq(documents.id, id)).limit(1);
         return {
             ...existingDocument,
-            tags: existingDocument.tags?.join(",") || "",
+            tags: existingDocument.tags || [],
+            metadata: JSON.stringify(existingDocument.metadata),
         };
     } catch (error) {
         throw error instanceof Error ? error : new Error("Error, please try again.");
@@ -67,7 +68,13 @@ export async function uploadFile(title: string, type: string, tags: string, file
         const dataUrl = `data:${file.type};base64,${base64String}`;
 
         // Note: Text extraction is now handled by background workers
-        if (!["application/pdf", "application/vnd.openxmlformats-officedocument.wordprocessingml.document", "application/msword"].includes(file.type)) {
+        if (
+            ![
+                "application/pdf",
+                "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                "application/msword",
+            ].includes(file.type)
+        ) {
             throw new Error(`Unsupported file type: ${file.type}. Only PDF and DOC/DOCX files are supported.`);
         }
 

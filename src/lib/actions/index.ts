@@ -2,6 +2,9 @@
 
 import { uploadFile } from "./documents";
 
+// Re-export ingredients actions
+export * from "./ingredients";
+
 export async function uploadDocument(formData: FormData) {
     try {
         // Extract form data for single file

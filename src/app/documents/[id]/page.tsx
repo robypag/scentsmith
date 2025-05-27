@@ -11,13 +11,6 @@ interface DocumentPageProps {
 
 export default async function DocumentPage({ params }: DocumentPageProps) {
     const { id } = await params;
-    
-    // First try to find in mock data (for development/demo)
-    const mockDocument = mockDocuments.find((doc) => doc.id === id);
-    if (mockDocument) {
-        return <DocumentViewer document={{ ...mockDocument, tags: mockDocument.tags?.join(',') || '' }} />;
-    }
-    
     // If not found in mock data, try database (for real documents)
     try {
         const document = await loadDocument(id);
@@ -27,7 +20,7 @@ export default async function DocumentPage({ params }: DocumentPageProps) {
         return <DocumentViewer document={document} />;
     } catch (error) {
         // If database error (e.g., invalid UUID), treat as not found
-        console.warn('Error loading document:', error);
+        console.warn("Error loading document:", error);
         notFound();
     }
 }
