@@ -3,7 +3,6 @@
 import { useSession } from "next-auth/react";
 import { SidebarProviders, useRightSidebar } from "@/hooks/use-sidebar-states";
 import { AppSidebar } from "./app-sidebar";
-import { RightSidebar } from "./right-sidebar";
 import { Navbar } from "./navbar";
 
 interface AuthenticatedLayoutProps {
@@ -45,11 +44,6 @@ function AuthenticatedLayoutContent({ children }: AuthenticatedLayoutProps) {
                         onClick={toggleRightSidebar}
                     />
                 )}
-
-                {/* Right sidebar */}
-                <div className="absolute top-0 right-0 h-full z-50">
-                    <RightSidebar />
-                </div>
             </div>
         </div>
     );

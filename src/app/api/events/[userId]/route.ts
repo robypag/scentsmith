@@ -36,29 +36,35 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
                 const encoder = new TextEncoder();
                 let subscriber: Redis | null = null;
                 let heartbeatInterval: NodeJS.Timeout | null = null;
+                let streamClosed = false;
 
                 const cleanup = async () => {
-                    if (heartbeatInterval) {
-                        clearInterval(heartbeatInterval);
-                    }
+                    if (heartbeatInterval) clearInterval(heartbeatInterval);
                     if (subscriber) {
-                        await subscriber.unsubscribe();
-                        await subscriber.quit();
+                        try {
+                            await subscriber.unsubscribe();
+                            await subscriber.quit();
+                        } catch (e) {
+                            console.error("[SSE API] Error during Redis cleanup:", e);
+                        }
                     }
-                    try {
-                        controller.close();
-                    } catch (err) {
-                        // Controller already closed
-                        console.error("Controller already closed:", err);
+                    if (!streamClosed) {
+                        try {
+                            controller.close();
+                            streamClosed = true;
+                        } catch (err) {
+                            console.error("[SSE API] Controller already closed:", err);
+                        }
                     }
                 };
 
                 try {
                     console.log("[SSE API] Sending connection confirmation");
-                    // Send connection confirmation
+                    // Send initial flush to start stream immediately
+                    controller.enqueue(encoder.encode(":\n\n"));
                     controller.enqueue(
                         encoder.encode(
-                            `data: ${JSON.stringify({
+                            `event: connected\ndata: ${JSON.stringify({
                                 type: "connected",
                                 timestamp: new Date().toISOString(),
                             })}\n\n`,
@@ -95,25 +101,35 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
                         }
                     });
 
-                    // Setup heartbeat to keep connection alive
+                    // Handle errors gracefully:
+                    subscriber.on("error", (err) => {
+                        console.error("[SSE API] Redis subscriber error:", err);
+                        cleanup();
+                    });
+
+                    // Heartbeat to keep connection alive
                     heartbeatInterval = setInterval(() => {
+                        if (streamClosed) return;
                         try {
                             controller.enqueue(
                                 encoder.encode(
-                                    `data: ${JSON.stringify({
+                                    `event: heartbeat\ndata: ${JSON.stringify({
                                         type: "heartbeat",
                                         timestamp: new Date().toISOString(),
                                     })}\n\n`,
                                 ),
                             );
                         } catch (err) {
-                            console.error("Error setting up heartbeat:", err);
+                            console.error("[SSE API] Heartbeat error:", err);
                             cleanup();
                         }
                     }, 30000);
 
-                    // Cleanup on client disconnect
-                    request.signal.addEventListener("abort", cleanup);
+                    // Cleanup on disconnect
+                    request.signal.addEventListener("abort", () => {
+                        console.log("[SSE API] Client disconnected");
+                        cleanup();
+                    });
                 } catch (err) {
                     console.error("Error setting up SSE:", err);
                     cleanup();
@@ -124,8 +140,9 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
         return new Response(stream, {
             headers: {
                 "Content-Type": "text/event-stream",
-                "Cache-Control": "no-cache",
+                "Cache-Control": "no-cache, no-transform",
                 Connection: "keep-alive",
+                "X-Accel-Buffering": "no",
             },
         });
     } catch (err) {

@@ -24,7 +24,6 @@ export function NotificationCenter({ className }: NotificationCenterProps) {
             <SheetTrigger asChild>
                 <Button variant="luxury-ghost" size="sm" className={cn("relative", className)}>
                     {hasNotifications ? <BellRing className="h-4 w-4" /> : <Bell className="h-4 w-4" />}
-
                     {activeJobs.length > 0 && (
                         <Badge
                             variant="destructive"
@@ -33,22 +32,25 @@ export function NotificationCenter({ className }: NotificationCenterProps) {
                             {activeJobs.length}
                         </Badge>
                     )}
+                    <span className="sr-only">Toggle Notification Center</span>
                 </Button>
             </SheetTrigger>
 
-            <SheetContent className="w-[400px] sm:w-[540px]">
+            <SheetContent side="right" className="w-96 p-0">
                 <SheetHeader>
                     <SheetTitle className="flex items-center gap-2">
-                        <Bell className="h-5 w-5" />
+                        <Bell className="h-5 w-5 text-sidebar-primary" />
                         Activity Center
                     </SheetTitle>
                     <SheetDescription asChild>
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 ml-2">
                             <div className={cn("h-2 w-2 rounded-full", isConnected ? "bg-green-500" : "bg-red-500")} />
-                            <span>{isConnected ? "Connected" : "Disconnected"}</span>
+                            <span className="text-xs">{isConnected ? "Connected" : "Disconnected"}</span>
                         </div>
                     </SheetDescription>
                 </SheetHeader>
+
+                <hr />
 
                 <div className="mt-6 space-y-4">
                     {/* Active Jobs */}
@@ -61,7 +63,7 @@ export function NotificationCenter({ className }: NotificationCenterProps) {
 
                             <ScrollArea className="max-h-[300px]">
                                 <div className="space-y-3">
-                                    {activeJobs.map(job => (
+                                    {activeJobs.map((job) => (
                                         <div key={job.jobId} className="p-3 rounded-lg border bg-card">
                                             <div className="flex items-center justify-between mb-2">
                                                 <span className="text-sm font-medium">Job {job.jobId.slice(-6)}</span>
@@ -89,11 +91,13 @@ export function NotificationCenter({ className }: NotificationCenterProps) {
 
                             <ScrollArea className="max-h-[200px]">
                                 <div className="space-y-2">
-                                    {completedJobs.map(job => (
+                                    {completedJobs.map((job) => (
                                         <div key={job.jobId} className="p-2 rounded border bg-muted/50">
                                             <div className="flex items-center justify-between">
                                                 <span className="text-sm">Job {job.jobId.slice(-6)}</span>
-                                                <Badge variant="outline" className="text-green-600">Done</Badge>
+                                                <Badge variant="outline" className="text-green-600">
+                                                    Done
+                                                </Badge>
                                             </div>
                                             <p className="text-xs text-muted-foreground mt-1">{job.message}</p>
                                         </div>

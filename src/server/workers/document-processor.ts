@@ -1,10 +1,10 @@
 import { Worker, Job } from "bullmq";
-import { getRedisClient } from "../redis-client";
-import { DocumentProcessingJobData, QueueNames, JobProgress } from "../types";
-import { summarizeDocument } from "../../ai/llm";
-import { generateEmbeddings } from "../../ai/embeddings";
-import { db } from "../../db";
-import { documents, resources, embeddings } from "../../db/schema";
+import { getRedisClient } from "./lib/redis-client";
+import { DocumentProcessingJobData, QueueNames, JobProgress } from "./lib/types";
+import { summarizeDocument } from "@/lib/ai/llm";
+import { generateEmbeddings } from "@/lib/ai/embeddings";
+import { db } from "@/lib/db";
+import { documents, resources, embeddings } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { PDFLoader } from "@langchain/community/document_loaders/fs/pdf";
 import { TextLoader } from "langchain/document_loaders/fs/text";
@@ -17,7 +17,7 @@ class DocumentProcessorWorker {
     private worker: Worker;
 
     constructor() {
-        console.log('Creating DocumentProcessorWorker...');
+        console.log("Creating DocumentProcessorWorker...");
 
         this.worker = new Worker(QueueNames.DOCUMENT_PROCESSING, this.processJob.bind(this), {
             connection: getRedisClient(),
@@ -25,7 +25,7 @@ class DocumentProcessorWorker {
         });
 
         this.worker.on("ready", () => {
-            console.log('Document processing worker is ready');
+            console.log("Document processing worker is ready");
         });
 
         this.worker.on("active", (job) => {
@@ -41,10 +41,10 @@ class DocumentProcessorWorker {
         });
 
         this.worker.on("error", (err) => {
-            console.error('Document processing worker error:', err);
+            console.error("Document processing worker error:", err);
         });
 
-        console.log('DocumentProcessorWorker created successfully');
+        console.log("DocumentProcessorWorker created successfully");
     }
 
     private async processJob(job: Job<DocumentProcessingJobData>) {
@@ -206,8 +206,8 @@ class DocumentProcessorWorker {
         const channel = `job_progress:${job.data.userId}`;
         const message = {
             jobId: job.id!,
-            status: progress.step === 'started' ? 'started' : 
-                   progress.step === 'completed' ? 'completed' : 'processing',
+            status:
+                progress.step === "started" ? "started" : progress.step === "completed" ? "completed" : "processing",
             progress: progress.percentage,
             message: progress.message,
         };
@@ -219,7 +219,7 @@ class DocumentProcessorWorker {
             const result = await redis.publish(channel, JSON.stringify(message));
             console.log(`[WORKER] Published to ${result} subscribers`);
         } catch (error) {
-            console.error('[WORKER] Failed to dispatch job event:', error);
+            console.error("[WORKER] Failed to dispatch job event:", error);
         }
     }
 
