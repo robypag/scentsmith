@@ -8,6 +8,13 @@
       "when": 1748269586602,
       "tag": "0000_flawless_machine_man",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1748290557708,
+      "tag": "0001_lush_monster_badoon",
+      "breakpoints": true
     }
   ]
 }

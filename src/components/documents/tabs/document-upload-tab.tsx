@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Progress } from "@/components/ui/progress";
 import { FileUp, Upload, X, FileText, Check, AlertCircle } from "lucide-react";
-import { uploadDocument } from "@/lib/actions";
+import { uploadDocumentAsync } from "@/lib/actions/documents/upload-async";
 import { useToast } from "@/hooks/use-toast";
 
 const ACCEPTED_FILE_TYPES = [
@@ -116,31 +116,23 @@ export function DocumentUploadTab({ onUploadSuccess }: DocumentUploadTabProps) {
     };
 
     const uploadSingleFile = async (fileItem: FileItem, index: number) => {
-        updateFileItem(index, { status: "uploading", progress: 0 });
+        updateFileItem(index, { status: "uploading", progress: 50 });
 
         try {
-            // Simulate progress updates
-            const progressInterval = setInterval(() => {
-                updateFileItem(index, {
-                    progress: Math.min(fileItem.progress + Math.random() * 30, 90),
-                });
-            }, 200);
-
             const formData = new FormData();
             formData.append("title", fileItem.title);
             formData.append("type", fileItem.type);
             formData.append("tags", fileItem.tags);
             formData.append("files", fileItem.file);
 
-            await uploadDocument(formData);
+            await uploadDocumentAsync(formData);
 
-            clearInterval(progressInterval);
             updateFileItem(index, {
                 status: "completed",
                 progress: 100,
             });
 
-            success(`"${fileItem.title}" has been uploaded successfully.`);
+            success(`"${fileItem.title}" has been queued for processing. Check the notification center for progress updates.`);
         } catch (err) {
             const errorMessage = err instanceof Error ? err.message : "Upload failed";
             updateFileItem(index, {
@@ -304,13 +296,21 @@ export function DocumentUploadTab({ onUploadSuccess }: DocumentUploadTabProps) {
                                                 </div>
                                             )}
 
-                                            {(fileItem.status === "uploading" || fileItem.status === "completed") && (
+                                            {fileItem.status === "uploading" && (
                                                 <div className="space-y-2">
-                                                    <div className="flex justify-between text-xs">
-                                                        <span>Progress</span>
-                                                        <span>{Math.round(fileItem.progress)}%</span>
+                                                    <div className="text-xs">
+                                                        <span>Uploading...</span>
                                                     </div>
-                                                    <Progress value={fileItem.progress} className="h-2" />
+                                                    <Progress className="h-2" />
+                                                </div>
+                                            )}
+
+                                            {fileItem.status === "completed" && (
+                                                <div className="space-y-2">
+                                                    <div className="text-xs text-green-600">
+                                                        <span>Upload completed</span>
+                                                    </div>
+                                                    <Progress value={100} className="h-2" />
                                                 </div>
                                             )}
 

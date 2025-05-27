@@ -13,6 +13,9 @@ export default withAuth(
                 if (pathname.startsWith("/auth")) {
                     return true;
                 }
+                if (pathname.startsWith("/api/test")) {
+                    return true;
+                }
 
                 // Require token for all other pages
                 return !!token;

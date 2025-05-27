@@ -3,15 +3,16 @@
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { MobileNav } from "./mobile-nav";
-import { useLeftSidebar, useRightSidebar } from "@/hooks/use-sidebar-states";
+import { useLeftSidebar } from "@/hooks/use-sidebar-states";
 import { headerNavigationItems } from "@/lib/mock-data/navigation";
-import { User, LogOut, Menu, MessageSquare } from "lucide-react";
+import { User, LogOut, Menu } from "lucide-react";
 import Link from "next/link";
 import { signOut } from "next-auth/react";
+import { NotificationCenter } from "@/components/notifications";
+import { RightSidebar } from "./right-sidebar";
 
 export function Navbar() {
     const { toggle: toggleLeftSidebar } = useLeftSidebar();
-    const { toggle: toggleRightSidebar } = useRightSidebar();
 
     return (
         <header className="sticky top-0 z-50 w-full border-b border-yellow-200 dark:border-yellow-700 bg-white/95 dark:bg-gray-900/95 backdrop-blur supports-[backdrop-filter]:bg-white/60 dark:supports-[backdrop-filter]:bg-gray-900/60 shadow-lg shadow-yellow-500/10">
@@ -32,12 +33,12 @@ export function Navbar() {
 
                     <div className="hidden md:block">
                         <h1 className="text-xl font-bold bg-gradient-to-r from-yellow-600 via-amber-600 to-yellow-600 bg-clip-text text-transparent tracking-wide">
-                            SmellSmith
+                            ScentSmith
                         </h1>
                     </div>
                     <div className="block md:hidden">
                         <h1 className="text-lg font-semibold bg-gradient-to-r from-yellow-600 via-amber-600 to-yellow-600 bg-clip-text text-transparent tracking-wide">
-                            SmellSmith
+                            ScentSmith
                         </h1>
                     </div>
                 </div>
@@ -57,19 +58,13 @@ export function Navbar() {
 
                 {/* Right section - Theme toggle, AI toggle and user menu */}
                 <div className="flex items-center space-x-2 ml-auto">
-                    <ThemeToggle />
+                    <NotificationCenter className="hover:shadow-md hover:shadow-yellow-500/20 hover:bg-yellow-50 dark:hover:bg-yellow-900/20" />
 
                     <div className="w-px h-6 bg-yellow-300 dark:bg-yellow-600 mx-2" />
 
-                    <Button
-                        variant="luxury-ghost"
-                        size="icon"
-                        onClick={toggleRightSidebar}
-                        className="hidden md:flex hover:shadow-md"
-                    >
-                        <MessageSquare className="h-4 w-4" />
-                        <span className="sr-only">Toggle AI assistant</span>
-                    </Button>
+                    <ThemeToggle />
+
+                    <RightSidebar />
 
                     <Button
                         variant="luxury-ghost"
