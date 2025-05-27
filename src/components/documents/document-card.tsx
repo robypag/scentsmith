@@ -14,7 +14,7 @@ interface DocumentCardProps {
 export function DocumentCard({ document, getDocumentTypeBadge, onDelete }: DocumentCardProps) {
     return (
         <Card className="hover:shadow-md transition-shadow h-full flex flex-col">
-            <CardHeader className="pb-3">
+            <CardHeader>
                 <div className="space-y-1">
                     <CardTitle className="text-lg">{document.title}</CardTitle>
                     <CardDescription className="text-sm">
@@ -23,7 +23,7 @@ export function DocumentCard({ document, getDocumentTypeBadge, onDelete }: Docum
                 </div>
             </CardHeader>
             <CardContent className="space-y-4 flex-1">
-                <p className="text-sm text-muted-foreground line-clamp-3">
+                <p className="text-sm text-muted-foreground line-clamp-4">
                     {document.summarization ?? "No summary available"}...
                 </p>
 

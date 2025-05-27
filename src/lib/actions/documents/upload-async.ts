@@ -3,8 +3,8 @@
 import { auth } from "@/auth";
 import { db } from "@/lib/db";
 import { documents, users } from "@/lib/db/schema";
-import { queueManager } from "@/lib/queue/queue-manager";
-import { DocumentProcessingJobData } from "@/lib/queue/types";
+import { queueManager } from "@/server/workers/lib/queue-manager";
+import { DocumentProcessingJobData } from "@/server/workers/lib/types";
 import { eq } from "drizzle-orm";
 import { nanoid } from "nanoid";
 
@@ -44,7 +44,10 @@ export async function uploadDocumentAsync(formData: FormData) {
             .values({
                 title,
                 type,
-                tags: tags.split(",").map(tag => tag.trim()).filter(Boolean),
+                tags: tags
+                    .split(",")
+                    .map((tag) => tag.trim())
+                    .filter(Boolean),
                 uploadedBy: user.id,
                 status: "pending",
             })

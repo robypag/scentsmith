@@ -1,6 +1,6 @@
 "use client";
 
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { useRightSidebar } from "@/hooks/use-sidebar-states";
 import { Button } from "@/components/ui/button";
 import { Bot, Sparkles, MessageSquare } from "lucide-react";
@@ -11,28 +11,24 @@ export function RightSidebar() {
     return (
         <Sheet open={isOpen} onOpenChange={setIsOpen}>
             <SheetTrigger asChild>
-                <Button
-                    variant="luxury-ghost"
-                    size="icon"
-                    className="hidden md:flex hover:shadow-md"
-                >
-                    <MessageSquare className="h-4 w-4" />
+                <Button variant="luxury-ghost" size="icon" className="hidden md:flex hover:shadow-md">
+                    <MessageSquare className="h-96 w-96" />
                     <span className="sr-only">Toggle AI assistant</span>
                 </Button>
             </SheetTrigger>
 
             <SheetContent side="right" className="w-96 p-0">
-                <SheetHeader className="sr-only">
-                    <SheetTitle>AI Assistant</SheetTitle>
-                </SheetHeader>
-                
-                <div className="flex flex-col h-full bg-sidebar">
-                    {/* Header */}
-                    <div className="flex items-center space-x-2 p-4 border-b border-sidebar-border bg-sidebar">
+                <SheetHeader className="border border-1">
+                    <SheetTitle className="flex items-center gap-2">
                         <Bot className="h-5 w-5 text-sidebar-primary" />
-                        <h3 className="text-lg font-semibold text-sidebar-foreground">AI Assistant</h3>
-                    </div>
+                        AI Assistant
+                    </SheetTitle>
+                    <SheetDescription asChild></SheetDescription>
+                </SheetHeader>
 
+                <hr />
+
+                <div className="flex flex-col h-full bg-sidebar">
                     {/* Chat Area */}
                     <div className="flex-1 p-4 overflow-y-auto bg-sidebar">
                         <div className="space-y-4">
@@ -43,8 +39,9 @@ export function RightSidebar() {
                                 </div>
                                 <div className="bg-sidebar-accent rounded-lg p-3 max-w-[240px]">
                                     <p className="text-sm text-sidebar-accent-foreground">
-                                        Hello! I&apos;m your AI fragrance assistant. I can help you analyze perfumes, find
-                                        recommendations, and answer questions about fragrances. How can I assist you today?
+                                        Hello! I&apos;m your AI fragrance assistant. I can help you analyze perfumes,
+                                        find recommendations, and answer questions about fragrances. How can I assist
+                                        you today?
                                     </p>
                                 </div>
                             </div>

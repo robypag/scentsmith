@@ -1,8 +1,8 @@
 "use server";
 
-import { resources, embeddings } from "../../db/schema";
-import { db } from "../../db";
-import { generateEmbeddings } from "../../ai/embeddings";
+import { resources, embeddings } from "@/lib/db/schema";
+import { db } from "@/lib/db";
+import { generateEmbeddings } from "@/lib/ai/embeddings";
 
 export async function createResource(documentId: string, content: string, pageNumber: number) {
     try {
