@@ -1,1 +1,0 @@
-This is a test document for the async upload system. It contains sample text to be processed by the background worker.

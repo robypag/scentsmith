@@ -13,8 +13,9 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { FragranceCard } from "@/components/ui/fragrance-card";
 import { mockFormulae, mockFormulaIngredients, mockIngredients } from "@/lib/mock-data/expert-data";
-import { Plus, Search, Eye, Edit, Trash2, Calendar, AlertTriangle, CheckCircle, Clock } from "lucide-react";
+import { Plus, Search, Eye, Edit, AlertTriangle, CheckCircle, Clock } from "lucide-react";
 import { useState } from "react";
 
 export default function FormulaePage() {
@@ -28,6 +29,16 @@ export default function FormulaePage() {
         const matchesStatus = statusFilter === "all" || formula.status === statusFilter;
         return matchesSearch && matchesStatus;
     });
+
+    const handleEdit = (formulaId: string) => {
+        // TODO: Implement edit functionality
+        console.log("Edit formula:", formulaId);
+    };
+
+    const handleDelete = (formulaId: string) => {
+        // TODO: Implement delete functionality
+        console.log("Delete formula:", formulaId);
+    };
 
     const getStatusBadge = (status: string) => {
         switch (status) {
@@ -146,92 +157,20 @@ export default function FormulaePage() {
                     {/* Formula Cards */}
                     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                         {filteredFormulae.map((formula) => {
-                            const ingredients = getFormulaIngredients(formula.id);
-                            const expirationDate = formula.expirationDate ? new Date(formula.expirationDate) : null;
-                            const isExpiringSoon =
-                                expirationDate && expirationDate < new Date(Date.now() + 90 * 24 * 60 * 60 * 1000);
+                            const ingredients = getFormulaIngredients(formula.id).map((fi) => ({
+                                id: fi.id,
+                                name: fi.ingredient?.name || 'Unknown',
+                                percentage: fi.percentage,
+                            }));
 
                             return (
-                                <Card key={formula.id} className="hover:shadow-md transition-shadow">
-                                    <CardHeader className="pb-3">
-                                        <div className="flex items-start justify-between">
-                                            <div className="space-y-1">
-                                                <CardTitle className="text-lg">{formula.name}</CardTitle>
-                                                <CardDescription className="text-sm">
-                                                    Version {formula.version} • {ingredients.length} ingredients
-                                                </CardDescription>
-                                            </div>
-                                            <div className="flex flex-col gap-1">
-                                                {getStatusBadge(formula.status)}
-                                                {getComplianceBadge(formula.isCompliant)}
-                                            </div>
-                                        </div>
-                                    </CardHeader>
-                                    <CardContent className="space-y-4">
-                                        <p className="text-sm text-muted-foreground line-clamp-2">
-                                            {formula.description}
-                                        </p>
-
-                                        <div className="grid grid-cols-2 gap-2 text-xs">
-                                            <div>
-                                                <span className="font-medium">Concentration:</span>
-                                                <br />
-                                                {formula.totalConcentration}%
-                                            </div>
-                                            <div>
-                                                <span className="font-medium">Batch Size:</span>
-                                                <br />
-                                                {formula.batchSize}g
-                                            </div>
-                                        </div>
-
-                                        {expirationDate && (
-                                            <div
-                                                className={`flex items-center gap-2 text-xs p-2 rounded-md ${
-                                                    isExpiringSoon
-                                                        ? "bg-amber-50 text-amber-800 dark:bg-amber-900 dark:text-amber-200"
-                                                        : "bg-muted text-muted-foreground"
-                                                }`}
-                                            >
-                                                <Calendar className="w-3 h-3" />
-                                                <span>
-                                                    Expires: {expirationDate.toLocaleDateString()}
-                                                    {isExpiringSoon && " (Soon)"}
-                                                </span>
-                                            </div>
-                                        )}
-
-                                        <div className="space-y-2">
-                                            <div className="text-xs font-medium">Key Ingredients:</div>
-                                            <div className="flex flex-wrap gap-1">
-                                                {ingredients.slice(0, 3).map((fi) => (
-                                                    <Badge key={fi.id} variant="outline" className="text-xs">
-                                                        {fi.ingredient?.name} ({fi.percentage}%)
-                                                    </Badge>
-                                                ))}
-                                                {ingredients.length > 3 && (
-                                                    <Badge variant="outline" className="text-xs">
-                                                        +{ingredients.length - 3} more
-                                                    </Badge>
-                                                )}
-                                            </div>
-                                        </div>
-
-                                        <div className="flex gap-2 pt-2">
-                                            <Button variant="outline" size="sm" className="flex-1">
-                                                <Eye className="w-3 h-3 mr-1" />
-                                                View
-                                            </Button>
-                                            <Button variant="outline" size="sm" className="flex-1">
-                                                <Edit className="w-3 h-3 mr-1" />
-                                                Edit
-                                            </Button>
-                                            <Button variant="outline" size="sm" className="px-2">
-                                                <Trash2 className="w-3 h-3" />
-                                            </Button>
-                                        </div>
-                                    </CardContent>
-                                </Card>
+                                <FragranceCard
+                                    key={formula.id}
+                                    formula={formula}
+                                    ingredients={ingredients}
+                                    onEdit={handleEdit}
+                                    onDelete={handleDelete}
+                                />
                             );
                         })}
                     </div>
