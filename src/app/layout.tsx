@@ -3,6 +3,7 @@ import { Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { AuthenticatedLayout } from "@/components/layout/authenticated-layout";
 import { Providers } from "@/components/providers/session-provider";
+import "@/lib/queue/startup"; // Initialize background workers
 
 const themeScript = `
   (function() {

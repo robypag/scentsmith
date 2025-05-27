@@ -111,6 +111,7 @@ export const documents = pgTable("documents", {
     metadata: jsonb("metadata"),
     tags: text("tags").array(),
     summarization: text("summarization"),
+    status: text("status").default("pending").notNull(), // pending, processing, ready, failed
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });

@@ -1,12 +1,11 @@
 "use server";
 
-import { createResource } from "./resource";
+// createResource functionality moved to background workers
 import { documents, users } from "../../db/schema";
 import { db } from "../../db";
 import { eq } from "drizzle-orm";
 import { auth } from "@/auth";
-import { PDFLoader } from "@langchain/community/document_loaders/fs/pdf";
-import { DocxLoader } from "@langchain/community/document_loaders/fs/docx";
+// LangChain loaders moved to background workers
 import { summarizeDocument } from "@/lib/ai/llm";
 import { DocumentDTO } from "@/types/document";
 
@@ -67,24 +66,9 @@ export async function uploadFile(title: string, type: string, tags: string, file
         const base64String = buffer.toString("base64");
         const dataUrl = `data:${file.type};base64,${base64String}`;
 
-        // Choose appropriate document loader based on file type
-        let loader;
-        switch (file.type) {
-            case "application/pdf":
-                // Create a temporary file-like object for PDFLoader
-                const pdfBlob = new Blob([buffer], { type: "application/pdf" });
-                loader = new PDFLoader(pdfBlob);
-                break;
-            case "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
-            case "application/msword":
-                // Create a temporary file-like object for DocxLoader
-                const docBlob = new Blob([buffer], {
-                    type: file.type,
-                });
-                loader = new DocxLoader(docBlob);
-                break;
-            default:
-                throw new Error(`Unsupported file type: ${file.type}. Only PDF and DOC/DOCX files are supported.`);
+        // Note: Text extraction is now handled by background workers
+        if (!["application/pdf", "application/vnd.openxmlformats-officedocument.wordprocessingml.document", "application/msword"].includes(file.type)) {
+            throw new Error(`Unsupported file type: ${file.type}. Only PDF and DOC/DOCX files are supported.`);
         }
 
         // Create document entry first
@@ -103,18 +87,9 @@ export async function uploadFile(title: string, type: string, tags: string, file
             })
             .returning();
 
-        // Load and process the document
-        const docs = await loader.load();
-
-        // Process each page/document chunk
-        for (let i = 0; i < docs.length; i++) {
-            const doc = docs[i];
-            await createResource(
-                createdDocument.id,
-                doc.pageContent,
-                i + 1, // Page numbers start from 1
-            );
-        }
+        // Note: Document processing is now handled by background workers
+        // The document record is created here, but text extraction,
+        // chunking, and embedding generation happens asynchronously
 
         return {
             success: true,

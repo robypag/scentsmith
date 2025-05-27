@@ -11,16 +11,15 @@ export async function summarizeDocument(textContent: string, mimeType: string): 
             messages: [
                 {
                     role: "user",
-                    content:
-                        "Summarize the following document, focus on the main points. I need the summary to write a headline for a blog post.",
-                    parts: [
-                        {
-                            type: "file",
-                            data: textContent,
-                            mimeType: mimeType,
-                        },
-                    ],
-                },
+                    content: [{
+                        type: 'text',
+                        text: "Summarize the following document, focus on the main points. I need the summary to write a headline for a blog post.",
+                    },{
+                        type: 'file',
+                        data: textContent,
+                        mimeType: mimeType
+                    }]
+                }
             ],
         });
         return text;
