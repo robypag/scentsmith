@@ -1,326 +1,251 @@
 "use client";
 
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { FormulaCard } from "@/components/formulae/formula-card";
-import { Plus, Search, Eye, Edit, AlertTriangle, CheckCircle, Clock, TestTube } from "lucide-react";
-import { useState } from "react";
 import { FormulaDTO } from "@/types/formula";
+import { FormulaCard } from "./formula-card";
+import { Search, Grid, List, Bot, CheckSquare, Square, Plus } from "lucide-react";
+import { useState, useMemo } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useAIContextStore, formulaToAIContext } from "@/stores/ai-context";
+import { useRightSidebar } from "@/hooks/use-sidebar-states";
 
 interface FormulaeListProps {
     formulae: FormulaDTO[];
+    showSearch?: boolean;
+    showFilters?: boolean;
+    allowMultiSelect?: boolean;
 }
 
-export function FormulaeList({ formulae }: FormulaeListProps) {
-    const [searchTerm, setSearchTerm] = useState("");
-    const [statusFilter, setStatusFilter] = useState("all");
+export function FormulaeList({
+    formulae,
+    showSearch = true,
+    showFilters = true,
+    allowMultiSelect = false,
+}: FormulaeListProps) {
     const router = useRouter();
+    const { addContext } = useAIContextStore();
+    const { setIsOpen: setRightSidebarOpen } = useRightSidebar();
 
-    const filteredFormulae = formulae.filter((formula) => {
-        const matchesSearch =
-            formula.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            formula.description?.toLowerCase().includes(searchTerm.toLowerCase());
-        const matchesStatus = statusFilter === "all" || formula.status === statusFilter;
-        return matchesSearch && matchesStatus;
-    });
+    const [searchTerm, setSearchTerm] = useState("");
+    const [statusFilter, setStatusFilter] = useState<string>("all");
+    const [sortBy, setSortBy] = useState<string>("name");
+    const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+    const [selectedFormulae, setSelectedFormulae] = useState<Set<string>>(new Set());
 
-    const handleDelete = (formulaId: string) => {
-        // TODO: Implement delete functionality
-        console.log("Delete formula:", formulaId);
-    };
+    const filteredAndSortedFormulae = useMemo(() => {
+        const filtered = formulae.filter((formula) => {
+            const matchesSearch =
+                formula.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                formula.description?.toLowerCase().includes(searchTerm.toLowerCase());
+            const matchesStatus = statusFilter === "all" || formula.status === statusFilter;
+            return matchesSearch && matchesStatus;
+        });
 
-    const getStatusBadge = (status: string) => {
-        switch (status) {
-            case "approved":
-                return (
-                    <Badge className="bg-emerald-100 text-emerald-800 hover:bg-emerald-200 dark:bg-emerald-800 dark:text-emerald-200">
-                        <CheckCircle className="w-3 h-3 mr-1" />
-                        Approved
-                    </Badge>
-                );
-            case "testing":
-                return (
-                    <Badge className="bg-amber-100 text-amber-800 hover:bg-amber-200 dark:bg-amber-800 dark:text-amber-200">
-                        <Clock className="w-3 h-3 mr-1" />
-                        Testing
-                    </Badge>
-                );
-            case "draft":
-                return (
-                    <Badge variant="secondary">
-                        <Edit className="w-3 h-3 mr-1" />
-                        Draft
-                    </Badge>
-                );
-            case "archived":
-                return <Badge variant="outline">Archived</Badge>;
-            default:
-                return <Badge variant="secondary">{status}</Badge>;
+        filtered.sort((a, b) => {
+            switch (sortBy) {
+                case "name":
+                    return a.name.localeCompare(b.name);
+                case "created":
+                    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+                case "version":
+                    const bVersion = typeof b.version === "string" ? parseInt(b.version) || 0 : b.version || 0;
+                    const aVersion = typeof a.version === "string" ? parseInt(a.version) || 0 : a.version || 0;
+                    return bVersion - aVersion;
+                default:
+                    return 0;
+            }
+        });
+
+        return filtered;
+    }, [formulae, searchTerm, statusFilter, sortBy]);
+
+    const handleSelectFormula = (formulaId: string) => {
+        if (allowMultiSelect) {
+            const newSelected = new Set(selectedFormulae);
+            if (newSelected.has(formulaId)) {
+                newSelected.delete(formulaId);
+            } else {
+                newSelected.add(formulaId);
+            }
+            setSelectedFormulae(newSelected);
+        } else {
+            router.push(`/formulae/${formulaId}`);
         }
     };
 
-    const getComplianceBadge = (isCompliant: boolean) => {
-        return isCompliant ? (
-            <Badge className="bg-emerald-100 text-emerald-800 hover:bg-emerald-200 dark:bg-emerald-800 dark:text-emerald-200">
-                Compliant
-            </Badge>
-        ) : (
-            <Badge className="bg-red-100 text-red-800 hover:bg-red-200 dark:bg-red-800 dark:text-red-200">
-                <AlertTriangle className="w-3 h-3 mr-1" />
-                Non-Compliant
-            </Badge>
-        );
+    const handleSelectAll = () => {
+        if (selectedFormulae.size === filteredAndSortedFormulae.length) {
+            setSelectedFormulae(new Set());
+        } else {
+            setSelectedFormulae(new Set(filteredAndSortedFormulae.map((f) => f.id)));
+        }
     };
 
+    const handleAskAIWithSelected = () => {
+        const selectedFormulaeData = formulae.filter((f) => selectedFormulae.has(f.id));
+        selectedFormulaeData.forEach((formula) => {
+            const contextEntity = formulaToAIContext({
+                id: formula.id,
+                name: formula.name,
+                description: formula.description || undefined,
+                status: formula.status || undefined,
+                version: typeof formula.version === "string" ? parseInt(formula.version) || 0 : formula.version || 0,
+                createdAt: formula.createdAt.toISOString(),
+                ingredients: formula.ingredients || [],
+            });
+            addContext(contextEntity, "formulae-list");
+        });
+        setRightSidebarOpen(true);
+    };
+
+    const isAllSelected =
+        selectedFormulae.size === filteredAndSortedFormulae.length && filteredAndSortedFormulae.length > 0;
+    const isSomeSelected = selectedFormulae.size > 0 && selectedFormulae.size < filteredAndSortedFormulae.length;
+
     return (
-        <div className="p-4 space-y-6">
+        <div className="space-y-6">
             <div className="flex items-center justify-between">
                 <div>
-                    <h1 className="text-3xl font-bold tracking-tight text-gold">Formula Management</h1>
-                    <p className="text-muted-foreground">Create, manage, and track your perfume formulae</p>
+                    <h1 className="text-3xl font-bold tracking-tight text-gold">Formulae Management</h1>
+                    <p className="text-muted-foreground">Manage your formulae catalogue</p>
                 </div>
-                <Link href={`/formulae/create`}>
-                    <Button className="bg-gold text-gold-foreground hover:bg-gold/90 w-full">
-                        <Plus className="w-4 h-4 mr-2" />
-                        New Formula
+                <div className="flex items-center space-x-2">
+                    {allowMultiSelect && selectedFormulae.size > 0 && (
+                        <Button onClick={handleAskAIWithSelected} variant="outline">
+                            <Bot className="h-4 w-4 mr-2" />
+                            Ask AI ({selectedFormulae.size})
+                        </Button>
+                    )}
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setViewMode(viewMode === "grid" ? "list" : "grid")}
+                    >
+                        {viewMode === "grid" ? <List className="h-4 w-4" /> : <Grid className="h-4 w-4" />}
                     </Button>
-                </Link>
+                    <Button
+                        className="bg-gold text-gold-foreground hover:bg-gold/90"
+                        onClick={() => router.push("/formulae/create")}
+                    >
+                        <Plus className="w-4 h-4 mr-2" />
+                        Add Formula
+                    </Button>
+                </div>
             </div>
 
-            <Tabs defaultValue="all" className="space-y-4">
-                <TabsList>
-                    <TabsTrigger value="all">All Formulae</TabsTrigger>
-                    <TabsTrigger value="active">Active</TabsTrigger>
-                    <TabsTrigger value="testing">In Testing</TabsTrigger>
-                    <TabsTrigger value="expiring">Expiring Soon</TabsTrigger>
-                </TabsList>
-
-                <TabsContent value="all" className="space-y-4">
-                    {/* Search and Filter Controls */}
-                    <Card>
-                        <CardContent className="p-6">
-                            <div className="space-y-4">
-                                <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
-                                    <div className="lg:col-span-3">
-                                        <Label htmlFor="search" className="text-sm font-medium">
-                                            Search Formulae
-                                        </Label>
-                                        <div className="relative mt-1.5">
-                                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                                            <Input
-                                                id="search"
-                                                placeholder="Search by name or description..."
-                                                className="pl-10 bg-white dark:bg-gray-800 border-input"
-                                                value={searchTerm}
-                                                onChange={(e) => setSearchTerm(e.target.value)}
-                                            />
-                                        </div>
-                                    </div>
-                                    <div className="lg:col-span-1">
-                                        <Label className="text-sm font-medium">Status Filter</Label>
-                                        <div className="mt-1.5">
-                                            <Select value={statusFilter} onValueChange={setStatusFilter}>
-                                                <SelectTrigger className="bg-white dark:bg-gray-800 border-input">
-                                                    <SelectValue placeholder="Select status" />
-                                                </SelectTrigger>
-                                                <SelectContent className="bg-white dark:bg-gray-800 border-input">
-                                                    <SelectItem value="all">All Statuses</SelectItem>
-                                                    <SelectItem value="draft">Draft</SelectItem>
-                                                    <SelectItem value="testing">Testing</SelectItem>
-                                                    <SelectItem value="approved">Approved</SelectItem>
-                                                    <SelectItem value="archived">Archived</SelectItem>
-                                                </SelectContent>
-                                            </Select>
-                                        </div>
+            {(showSearch || showFilters) && (
+                <Card>
+                    <CardContent className="p-4">
+                        <div className="flex flex-col space-y-4 md:flex-row md:space-y-0 md:space-x-4">
+                            {showSearch && (
+                                <div className="flex-1">
+                                    <div className="relative">
+                                        <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                                        <Input
+                                            placeholder="Search formulae..."
+                                            value={searchTerm}
+                                            onChange={(e) => setSearchTerm(e.target.value)}
+                                            className="pl-8"
+                                        />
                                     </div>
                                 </div>
-                            </div>
-                        </CardContent>
-                    </Card>
+                            )}
 
-                    {/* Formula Cards */}
-                    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                        {filteredFormulae.map((formula) => {
-                            return (
-                                <FormulaCard
-                                    key={formula.id}
-                                    formula={formula}
-                                    onEdit={() => router.push(`/formulae/${formula.id}/edit`)}
-                                    onDelete={handleDelete}
-                                />
-                            );
-                        })}
-                    </div>
+                            {showFilters && (
+                                <div className="flex space-x-2">
+                                    <Select value={statusFilter} onValueChange={setStatusFilter}>
+                                        <SelectTrigger className="w-[140px]">
+                                            <SelectValue placeholder="Status" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="all">All Status</SelectItem>
+                                            <SelectItem value="active">Active</SelectItem>
+                                            <SelectItem value="draft">Draft</SelectItem>
+                                            <SelectItem value="archived">Archived</SelectItem>
+                                        </SelectContent>
+                                    </Select>
 
-                    {filteredFormulae.length === 0 && (
-                        <div className="text-center py-12">
-                            <TestTube className="mx-auto h-12 w-12 text-muted-foreground" />
-                            <h3 className="mt-2 text-sm font-semibold text-muted-foreground">No formula found</h3>
-                            <p className="mt-1 text-sm text-muted-foreground">
-                                {searchTerm || statusFilter !== "all"
-                                    ? "Try adjusting your search or filter criteria."
-                                    : "Get started by adding your first formula."}
-                            </p>
-                            {!searchTerm && statusFilter === "all" && (
-                                <div className="mt-6">
-                                    <Button
-                                        onClick={() => router.push("/formulae/create")}
-                                        className="bg-gold text-gold-foreground hover:bg-gold/90"
-                                    >
-                                        <Plus className="w-4 h-4 mr-2" />
-                                        Add Formula
-                                    </Button>
+                                    <Select value={sortBy} onValueChange={setSortBy}>
+                                        <SelectTrigger className="w-[140px]">
+                                            <SelectValue placeholder="Sort by" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="name">Name</SelectItem>
+                                            <SelectItem value="created">Created</SelectItem>
+                                            <SelectItem value="version">Version</SelectItem>
+                                        </SelectContent>
+                                    </Select>
                                 </div>
                             )}
                         </div>
-                    )}
-                </TabsContent>
 
-                <TabsContent value="active" className="space-y-4">
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Active Formulae</CardTitle>
-                            <CardDescription>Formulae currently in production or approved for use</CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="space-y-4">
-                                {formulae
-                                    .filter((f) => f.status === "approved")
-                                    .map((formula) => (
-                                        <div
-                                            key={formula.id}
-                                            className="flex items-center justify-between p-4 border rounded-lg"
-                                        >
-                                            <div>
-                                                <h4 className="font-medium">{formula.name}</h4>
-                                                <p className="text-sm text-muted-foreground">
-                                                    Version {formula.version}
-                                                </p>
-                                            </div>
-                                            <div className="flex items-center gap-2">
-                                                {getStatusBadge(formula.status ?? "unknown")}
-                                                <Button variant="outline" size="sm">
-                                                    <Eye className="w-3 h-3 mr-1" />
-                                                    View Details
-                                                </Button>
-                                            </div>
-                                        </div>
-                                    ))}
+                        {allowMultiSelect && filteredAndSortedFormulae.length > 0 && (
+                            <div className="flex items-center justify-between pt-4 border-t mt-4">
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={handleSelectAll}
+                                    className="flex items-center space-x-2"
+                                >
+                                    {isAllSelected ? (
+                                        <CheckSquare className="h-4 w-4" />
+                                    ) : isSomeSelected ? (
+                                        <Square className="h-4 w-4 opacity-50" />
+                                    ) : (
+                                        <Square className="h-4 w-4" />
+                                    )}
+                                    <span>{isAllSelected ? "Deselect All" : "Select All"}</span>
+                                </Button>
+
+                                {selectedFormulae.size > 0 && (
+                                    <div className="text-sm text-muted-foreground">
+                                        {selectedFormulae.size} formulae selected
+                                    </div>
+                                )}
                             </div>
-                            {formulae.length === 0 && (
-                                <div className="text-center py-12">
-                                    <p className="mt-1 text-sm text-muted-foreground">
-                                        {"Get started by adding your first formula."}
-                                    </p>
-                                </div>
-                            )}
-                        </CardContent>
-                    </Card>
-                </TabsContent>
+                        )}
+                    </CardContent>
+                </Card>
+            )}
 
-                <TabsContent value="testing" className="space-y-4">
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Formulae in Testing</CardTitle>
-                            <CardDescription>
-                                Formulae currently undergoing stability and compliance testing
-                            </CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="space-y-4">
-                                {formulae
-                                    .filter((f) => f.status === "testing")
-                                    .map((formula) => (
-                                        <div
-                                            key={formula.id}
-                                            className="flex items-center justify-between p-4 border rounded-lg"
-                                        >
-                                            <div>
-                                                <h4 className="font-medium">{formula.name}</h4>
-                                                <p className="text-sm text-muted-foreground">{formula.notes}</p>
-                                            </div>
-                                            <div className="flex items-center gap-2">
-                                                {getComplianceBadge(formula.isCompliant ?? false)}
-                                                <Button variant="outline" size="sm">
-                                                    <Eye className="w-3 h-3 mr-1" />
-                                                    Test Results
-                                                </Button>
-                                            </div>
-                                        </div>
-                                    ))}
-                            </div>
-                            {formulae.length === 0 && (
-                                <div className="text-center py-12">
-                                    <p className="mt-1 text-sm text-muted-foreground">
-                                        {"Get started by adding your first formula."}
-                                    </p>
-                                </div>
-                            )}
-                        </CardContent>
-                    </Card>
-                </TabsContent>
-
-                <TabsContent value="expiring" className="space-y-4">
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Expiring Formulae</CardTitle>
-                            <CardDescription>Formulae expiring within the next 90 days</CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="space-y-4">
-                                {formulae
-                                    .filter((f) => {
-                                        const expDate = f.expirationDate ? new Date(f.expirationDate) : null;
-                                        return expDate && expDate < new Date(Date.now() + 90 * 24 * 60 * 60 * 1000);
-                                    })
-                                    .map((formula) => {
-                                        const expDate = new Date(formula.expirationDate!);
-                                        const daysLeft = Math.ceil(
-                                            (expDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24),
-                                        );
-
-                                        return (
-                                            <div
-                                                key={formula.id}
-                                                className="flex items-center justify-between p-4 border rounded-lg bg-amber-50 dark:bg-amber-900/30"
-                                            >
-                                                <div>
-                                                    <h4 className="font-medium">{formula.name}</h4>
-                                                    <p className="text-sm text-muted-foreground">
-                                                        Expires in {daysLeft} days ({expDate.toLocaleDateString()})
-                                                    </p>
-                                                </div>
-                                                <div className="flex items-center gap-2">
-                                                    <Badge className="bg-amber-100 text-amber-800 hover:bg-amber-200 dark:bg-amber-800 dark:text-amber-200">
-                                                        <AlertTriangle className="w-3 h-3 mr-1" />
-                                                        Expiring Soon
-                                                    </Badge>
-                                                    <Button variant="outline" size="sm">
-                                                        Renew
-                                                    </Button>
-                                                </div>
-                                            </div>
-                                        );
-                                    })}
-                            </div>
-                            {formulae.length === 0 && (
-                                <div className="text-center py-12">
-                                    <p className="mt-1 text-sm text-muted-foreground">
-                                        {"Get started by adding your first formula."}
-                                    </p>
-                                </div>
-                            )}
-                        </CardContent>
-                    </Card>
-                </TabsContent>
-            </Tabs>
+            {filteredAndSortedFormulae.length === 0 ? (
+                <Card>
+                    <CardContent className="flex flex-col items-center justify-center py-16">
+                        <div className="text-center">
+                            <h3 className="text-lg font-semibold mb-2">No formulae found</h3>
+                            <p className="text-muted-foreground mb-4">
+                                {searchTerm || statusFilter !== "all"
+                                    ? "Try adjusting your search or filters"
+                                    : "Get started by creating your first formula"}
+                            </p>
+                            <Link href="/formulae/new">
+                                <Button>Create Formula</Button>
+                            </Link>
+                        </div>
+                    </CardContent>
+                </Card>
+            ) : (
+                <div
+                    className={
+                        viewMode === "grid" ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" : "space-y-4"
+                    }
+                >
+                    {filteredAndSortedFormulae.map((formula) => (
+                        <FormulaCard
+                            key={formula.id}
+                            formula={formula}
+                            variant={viewMode === "list" ? "compact" : "default"}
+                            isSelected={selectedFormulae.has(formula.id)}
+                            onSelect={handleSelectFormula}
+                            showActions={!allowMultiSelect}
+                        />
+                    ))}
+                </div>
+            )}
         </div>
     );
 }

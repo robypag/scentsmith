@@ -15,15 +15,22 @@ import {
     FileText,
     Users,
     TrendingUp,
+    Bot,
 } from "lucide-react";
 import Link from "next/link";
 import { FormulaDTO } from "@/types/formula";
+import { useAIContextStore } from "@/stores/ai-context";
+import { useRightSidebar } from "@/hooks/use-sidebar-states";
+import { formulaToAIContext } from "@/stores/ai-context";
 
 interface FormulaDetailsProps {
     formula: FormulaDTO;
 }
 
 export function FormulaDetails({ formula }: FormulaDetailsProps) {
+    const { addContext, hasEntity } = useAIContextStore();
+    const { setIsOpen: setRightSidebarOpen } = useRightSidebar();
+
     const ingredients = formula.ingredients;
     const getStatusBadge = (status: string | null) => {
         switch (status) {
@@ -77,25 +84,49 @@ export function FormulaDetails({ formula }: FormulaDetailsProps) {
         return sum + cost * (percentage / 100);
     }, 0);
 
+    const isInContext = hasEntity(formula.id);
+
+    const handleAskAI = () => {
+        const contextEntity = formulaToAIContext({
+            id: formula.id,
+            name: formula.name,
+            description: formula.description || undefined,
+            status: formula.status || undefined,
+            version: typeof formula.version === "string" ? parseInt(formula.version) || 0 : formula.version || 0,
+            createdAt: formula.createdAt.toISOString(),
+            ingredients: formula.ingredients || [],
+        });
+        addContext(contextEntity, "formula-card");
+        setRightSidebarOpen(true);
+    };
+
     return (
         <div className="p-4 space-y-6 max-w-7xl mx-auto">
+            <Link href="/formulae">
+                <Button variant="outline" size="sm">
+                    <ArrowLeft className="w-4 h-4 mr-2" />
+                    Back to Formulae
+                </Button>
+            </Link>
             {/* Header */}
             <div className="flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                    <Link href="/formulae">
-                        <Button variant="outline" size="sm">
-                            <ArrowLeft className="w-4 h-4 mr-2" />
-                            Back to Formulae
-                        </Button>
-                    </Link>
+                <div className="flex items-center gap-6">
                     <div>
-                        <h1 className="text-3xl font-bold tracking-tight text-gold">{formula.name}</h1>
-                        <p className="text-muted-foreground">Version {formula.version || "1.0"}</p>
+                        <div>
+                            <h1 className="text-3xl font-bold tracking-tight text-gold">{formula.name}</h1>
+                            <p className="text-muted-foreground">Version {formula.version || "1.0"}</p>
+                        </div>
                     </div>
                 </div>
                 <div className="flex items-center gap-2">
                     {getStatusBadge(formula.status)}
                     {getComplianceBadge(formula.isCompliant)}
+                    {isInContext && (
+                        <Badge className="bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400 border-blue-300 dark:border-blue-700">
+                            <Bot className="w-3 h-3 mr-1" />
+                            AI Analyzing
+                        </Badge>
+                    )}
                 </div>
             </div>
 
@@ -126,7 +157,9 @@ export function FormulaDetails({ formula }: FormulaDetailsProps) {
                             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                                 <div>
                                     <span className="font-medium">Total Concentration</span>
-                                    <p className="text-lg font-semibold text-gold">{formula.totalConcentration || "0"}%</p>
+                                    <p className="text-lg font-semibold text-gold">
+                                        {formula.totalConcentration || "0"}%
+                                    </p>
                                 </div>
                                 <div>
                                     <span className="font-medium">Batch Size</span>
@@ -181,7 +214,11 @@ export function FormulaDetails({ formula }: FormulaDetailsProps) {
                                         <div className="text-right">
                                             <div className="text-lg font-semibold">{ing.percentage}%</div>
                                             <div className="text-sm text-muted-foreground">
-                                                ${((Number(ing.ingredient.cost) || 0) * (Number(ing.percentage) / 100)).toFixed(2)}
+                                                $
+                                                {(
+                                                    (Number(ing.ingredient.cost) || 0) *
+                                                    (Number(ing.percentage) / 100)
+                                                ).toFixed(2)}
                                             </div>
                                         </div>
                                     </div>
@@ -248,21 +285,26 @@ export function FormulaDetails({ formula }: FormulaDetailsProps) {
                             <CardTitle>Actions</CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-3">
-                            <Button className="w-full">
-                                <Edit className="w-4 h-4 mr-2" />
-                                Edit Formula
-                            </Button>
-                            <Button variant="outline" className="w-full">
-                                <Users className="w-4 h-4 mr-2" />
-                                Create Batch
-                            </Button>
+                            <Link href={`/formulae/${formula.id}/edit`} className="w-full">
+                                <Button className="w-full">
+                                    <Edit className="w-4 h-4 mr-2" />
+                                    Edit Formula
+                                </Button>
+                            </Link>
                             <Button variant="outline" className="w-full">
                                 <TrendingUp className="w-4 h-4 mr-2" />
                                 Run Analysis
                             </Button>
-                            <Button variant="outline" className="w-full">
-                                <FileText className="w-4 h-4 mr-2" />
-                                Export Formula
+                            <Button
+                                variant="outline"
+                                className="w-full"
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleAskAI();
+                                }}
+                            >
+                                <Bot className="h-4 w-4 mr-2" />
+                                Ask AI
                             </Button>
                         </CardContent>
                     </Card>

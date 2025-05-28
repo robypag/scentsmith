@@ -4,141 +4,219 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { FormulaDTO } from "@/types/formula";
-import { Calendar, AlertTriangle, CheckCircle, Clock, Eye, Edit, Trash2 } from "lucide-react";
+import { Calendar, AlertTriangle, CheckCircle, Clock, Eye, Edit, Bot, Trash2 } from "lucide-react";
 import Link from "next/link";
+import { useAIContextStore, formulaToAIContext } from "@/stores/ai-context";
+import { cn } from "@/lib/utils";
+import { useRightSidebar } from "@/hooks/use-sidebar-states";
 
 interface FormulaCardProps {
     formula: FormulaDTO;
-    onEdit?: (formulaId: string) => void;
-    onDelete?: (formulaId: string) => void;
+    showActions?: boolean;
+    className?: string;
+    variant?: "default" | "compact";
+    isSelected?: boolean;
+    onSelect?: (formulaId: string) => void;
 }
 
-export function FormulaCard({ formula, onEdit, onDelete }: FormulaCardProps) {
-    const getStatusBadge = (status: string) => {
-        switch (status) {
-            case "approved":
-                return (
-                    <Badge className="bg-emerald-100 text-emerald-800 hover:bg-emerald-200 dark:bg-emerald-800 dark:text-emerald-200">
-                        <CheckCircle className="w-3 h-3 mr-1" />
-                        Approved
-                    </Badge>
-                );
-            case "testing":
-                return (
-                    <Badge className="bg-amber-100 text-amber-800 hover:bg-amber-200 dark:bg-amber-800 dark:text-amber-200">
-                        <Clock className="w-3 h-3 mr-1" />
-                        Testing
-                    </Badge>
-                );
-            case "draft":
-                return (
-                    <Badge variant="secondary">
-                        <Edit className="w-3 h-3 mr-1" />
-                        Draft
-                    </Badge>
-                );
-            case "archived":
-                return <Badge variant="outline">Archived</Badge>;
-            default:
-                return <Badge variant="secondary">{status}</Badge>;
+export function FormulaCard({
+    formula,
+    showActions = true,
+    className,
+    variant = "default",
+    isSelected = false,
+    onSelect,
+}: FormulaCardProps) {
+    const { addContext, hasEntity } = useAIContextStore();
+    const { setIsOpen: setRightSidebarOpen } = useRightSidebar();
+
+    const isInContext = hasEntity(formula.id);
+
+    const handleAskAI = () => {
+        const contextEntity = formulaToAIContext({
+            id: formula.id,
+            name: formula.name,
+            description: formula.description || undefined,
+            status: formula.status || undefined,
+            version: typeof formula.version === "string" ? parseInt(formula.version) || 0 : formula.version || 0,
+            createdAt: formula.createdAt.toISOString(),
+            ingredients: formula.ingredients || [],
+        });
+        addContext(contextEntity, "formula-card");
+        setRightSidebarOpen(true);
+    };
+
+    const handleCardClick = () => {
+        if (onSelect) {
+            onSelect(formula.id);
         }
     };
 
-    const getComplianceBadge = (isCompliant: boolean) => {
-        return isCompliant ? (
-            <Badge className="bg-emerald-100 text-emerald-800 hover:bg-emerald-200 dark:bg-emerald-800 dark:text-emerald-200">
-                Compliant
-            </Badge>
-        ) : (
-            <Badge className="bg-red-100 text-red-800 hover:bg-red-200 dark:bg-red-800 dark:text-red-200">
-                <AlertTriangle className="w-3 h-3 mr-1" />
-                Non-Compliant
-            </Badge>
-        );
+    const getStatusIcon = () => {
+        switch (formula.status) {
+            case "active":
+                return <CheckCircle className="h-4 w-4 text-green-500" />;
+            case "draft":
+                return <Clock className="h-4 w-4 text-yellow-500" />;
+            case "archived":
+                return <AlertTriangle className="h-4 w-4 text-gray-500" />;
+            default:
+                return null;
+        }
     };
 
-    const expirationDate = formula.expirationDate ? new Date(formula.expirationDate) : null;
-    const isExpiringSoon = expirationDate && expirationDate < new Date(Date.now() + 90 * 24 * 60 * 60 * 1000);
+    const getStatusBadgeVariant = () => {
+        switch (formula.status) {
+            case "active":
+                return "default";
+            case "draft":
+                return "secondary";
+            case "archived":
+                return "outline";
+            default:
+                return "outline";
+        }
+    };
+
+    if (variant === "compact") {
+        return (
+            <Card
+                className={cn(
+                    "cursor-pointer transition-all hover:shadow-md",
+                    isSelected && "ring-2 ring-primary",
+                    isInContext && "bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-800",
+                    className,
+                )}
+                onClick={handleCardClick}
+            >
+                <CardContent className="p-4">
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-2 gap-2">
+                            {getStatusIcon()}
+                            <div className="flex-1 min-w-0">
+                                <h3 className="font-medium truncate">{formula.name}</h3>
+                                <p className="text-sm text-muted-foreground truncate">{formula.description}</p>
+                            </div>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                            <Badge variant={getStatusBadgeVariant()}>{formula.status}</Badge>
+                            {showActions && (
+                                <Button
+                                    size="sm"
+                                    variant="ghost"
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleAskAI();
+                                    }}
+                                    className={cn(
+                                        "h-8 w-8 p-0",
+                                        isInContext && "bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400",
+                                    )}
+                                >
+                                    <Bot className="h-4 w-4" />
+                                </Button>
+                            )}
+                        </div>
+                    </div>
+                </CardContent>
+            </Card>
+        );
+    }
 
     return (
-        <Card className="hover:shadow-md transition-shadow flex flex-col h-full">
-            <CardHeader className="pb-3">
+        <Card
+            className={cn(
+                "cursor-pointer transition-all hover:shadow-md",
+                isSelected && "ring-2 ring-primary",
+                isInContext && "bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-800",
+                className,
+            )}
+            onClick={handleCardClick}
+        >
+            <CardHeader className="pb-2">
                 <div className="flex items-start justify-between">
-                    <div className="space-y-1">
-                        <CardTitle className="text-lg">{formula.name}</CardTitle>
-                        <CardDescription className="text-sm">
-                            Version {formula.version} • {formula.ingredients.length} ingredients
-                        </CardDescription>
+                    <div className="space-y-1 flex-1">
+                        <div className="flex items-center space-x-2">
+                            {getStatusIcon()}
+                            <CardTitle className="text-lg">{formula.name}</CardTitle>
+                        </div>
+                        {formula.description && (
+                            <CardDescription className="text-sm">{formula.description}</CardDescription>
+                        )}
                     </div>
-                    <div className="flex flex-col gap-1">
-                        {getStatusBadge(formula.status ?? "")}
-                        {getComplianceBadge(formula.isCompliant ?? false)}
-                    </div>
+                    <Badge variant={getStatusBadgeVariant()}>{formula.status}</Badge>
                 </div>
             </CardHeader>
-            <CardContent className="space-y-4 flex-1 flex flex-col">
-                <p className="text-sm text-muted-foreground line-clamp-2">{formula.description}</p>
 
-                <div className="grid grid-cols-2 gap-2 text-xs">
-                    <div>
-                        <span className="font-medium">Concentration:</span>
-                        <br />
-                        {formula.totalConcentration}%
+            <CardContent className="space-y-4">
+                <div className="flex items-center justify-between text-sm text-muted-foreground">
+                    <div className="flex items-center space-x-1">
+                        <Calendar className="h-4 w-4" />
+                        <span>v{formula.version}</span>
                     </div>
-                    <div>
-                        <span className="font-medium">Batch Size:</span>
-                        <br />
-                        {formula.batchSize}g
-                    </div>
+                    <span>{new Date(formula.createdAt).toLocaleDateString()}</span>
                 </div>
 
-                {expirationDate && (
-                    <div
-                        className={`flex items-center gap-2 text-xs p-2 rounded-md ${
-                            isExpiringSoon
-                                ? "bg-amber-50 text-amber-800 dark:bg-amber-900 dark:text-amber-200"
-                                : "bg-muted text-muted-foreground"
-                        }`}
-                    >
-                        <Calendar className="w-3 h-3" />
-                        <span>
-                            Expires: {expirationDate.toLocaleDateString()}
-                            {isExpiringSoon && " (Soon)"}
-                        </span>
+                {formula.ingredients && formula.ingredients.length > 0 && (
+                    <div className="space-y-2">
+                        <h4 className="font-medium text-sm">Ingredients ({formula.ingredients.length})</h4>
+                        <div className="flex flex-wrap gap-1">
+                            {formula.ingredients.slice(0, 3).map((formulaIngredient, index) => (
+                                <Badge key={index} variant="outline" className="text-xs">
+                                    {formulaIngredient.ingredient.name}
+                                </Badge>
+                            ))}
+                            {formula.ingredients.length > 3 && (
+                                <Badge variant="outline" className="text-xs">
+                                    +{formula.ingredients.length - 3} more
+                                </Badge>
+                            )}
+                        </div>
                     </div>
                 )}
 
-                <div className="space-y-2 flex-1">
-                    <div className="text-xs font-medium">Key Ingredients:</div>
-                    <div className="flex flex-wrap gap-1">
-                        {formula.ingredients.slice(0, 3).map((formulaIngredient) => (
-                            <Badge key={formulaIngredient.ingredient.id} variant="outline" className="text-xs">
-                                {formulaIngredient.ingredient.name} ({formulaIngredient.percentage}%)
-                            </Badge>
-                        ))}
-                        {formula.ingredients.length > 3 && (
-                            <Badge variant="outline" className="text-xs">
-                                +{formula.ingredients.length - 3} more
-                            </Badge>
-                        )}
+                {showActions && (
+                    <div className="flex items-center justify-between pt-2 border-t">
+                        <div className="flex space-x-2">
+                            <Link href={`/formulae/${formula.id}`}>
+                                <Button size="sm" variant="outline">
+                                    <Eye className="h-4 w-4" />
+                                </Button>
+                            </Link>
+                            <Link href={`/formulae/${formula.id}/edit`}>
+                                <Button size="sm" variant="outline">
+                                    <Edit className="h-4 w-4" />
+                                </Button>
+                            </Link>
+                            <Button
+                                variant="destructive"
+                                size="sm"
+                                className="px-2"
+                                onClick={() => ({})} // TODO: Implement delete functionality
+                                disabled={false}
+                            >
+                                <Trash2 className="w-3 h-3" />
+                            </Button>
+                        </div>
+                        <div className="flex space-x-2">
+                            <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleAskAI();
+                                }}
+                                className={cn(
+                                    isInContext &&
+                                        "bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400 border-blue-300 dark:border-blue-700",
+                                )}
+                            >
+                                <Bot className="h-4 w-4 mr-1" />
+                                Ask AI
+                            </Button>
+                        </div>
                     </div>
-                </div>
-
-                <div className="flex gap-2 pt-2 mt-auto">
-                    <Link href={`/formulae/${formula.id}`} className="flex-1">
-                        <Button variant="outline" size="sm" className="w-full">
-                            <Eye className="w-3 h-3 mr-1" />
-                            View
-                        </Button>
-                    </Link>
-                    <Button variant="outline" size="sm" className="flex-1" onClick={() => onEdit?.(formula.id)}>
-                        <Edit className="w-3 h-3 mr-1" />
-                        Edit
-                    </Button>
-                    <Button variant="outline" size="sm" className="px-2" onClick={() => onDelete?.(formula.id)}>
-                        <Trash2 className="w-3 h-3" />
-                    </Button>
-                </div>
+                )}
             </CardContent>
         </Card>
     );

@@ -5,13 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Plus, Search, AlertTriangle, DollarSign, Beaker, Shield, Eye, Edit, Trash2 } from "lucide-react";
 import { useState } from "react";
@@ -50,19 +44,36 @@ export function IngredientsList({ ingredients, stats }: IngredientsListProps) {
     const getVolatilityBadge = (volatility: string | null) => {
         switch (volatility) {
             case "top":
-                return <Badge className="bg-sky-100 text-sky-800 hover:bg-sky-200 dark:bg-sky-800 dark:text-sky-200">Top Note</Badge>;
+                return (
+                    <Badge className="bg-sky-100 text-sky-800 hover:bg-sky-200 dark:bg-sky-800 dark:text-sky-200">
+                        Top Note
+                    </Badge>
+                );
             case "middle":
-                return <Badge className="bg-emerald-100 text-emerald-800 hover:bg-emerald-200 dark:bg-emerald-800 dark:text-emerald-200">Middle Note</Badge>;
+                return (
+                    <Badge className="bg-emerald-100 text-emerald-800 hover:bg-emerald-200 dark:bg-emerald-800 dark:text-emerald-200">
+                        Middle Note
+                    </Badge>
+                );
             case "base":
-                return <Badge className="bg-purple-100 text-purple-800 hover:bg-purple-200 dark:bg-purple-800 dark:text-purple-200">Base Note</Badge>;
+                return (
+                    <Badge className="bg-purple-100 text-purple-800 hover:bg-purple-200 dark:bg-purple-800 dark:text-purple-200">
+                        Base Note
+                    </Badge>
+                );
             default:
                 return <Badge variant="secondary">{volatility || "Unknown"}</Badge>;
         }
     };
 
     const getSafetyLevel = (safetyNotes: string | null) => {
-        if (!safetyNotes) return <Badge className="bg-emerald-100 text-emerald-800 hover:bg-emerald-200 dark:bg-emerald-800 dark:text-emerald-200">Low Risk</Badge>;
-        
+        if (!safetyNotes)
+            return (
+                <Badge className="bg-emerald-100 text-emerald-800 hover:bg-emerald-200 dark:bg-emerald-800 dark:text-emerald-200">
+                    Low Risk
+                </Badge>
+            );
+
         if (safetyNotes.toLowerCase().includes("phototoxic") || safetyNotes.toLowerCase().includes("allergen")) {
             return (
                 <Badge variant="destructive">
@@ -74,9 +85,17 @@ export function IngredientsList({ ingredients, stats }: IngredientsListProps) {
             safetyNotes.toLowerCase().includes("sparingly") ||
             safetyNotes.toLowerCase().includes("sensitizer")
         ) {
-            return <Badge className="bg-amber-100 text-amber-800 hover:bg-amber-200 dark:bg-amber-800 dark:text-amber-200">Medium Risk</Badge>;
+            return (
+                <Badge className="bg-amber-100 text-amber-800 hover:bg-amber-200 dark:bg-amber-800 dark:text-amber-200">
+                    Medium Risk
+                </Badge>
+            );
         } else {
-            return <Badge className="bg-emerald-100 text-emerald-800 hover:bg-emerald-200 dark:bg-emerald-800 dark:text-emerald-200">Low Risk</Badge>;
+            return (
+                <Badge className="bg-emerald-100 text-emerald-800 hover:bg-emerald-200 dark:bg-emerald-800 dark:text-emerald-200">
+                    Low Risk
+                </Badge>
+            );
         }
     };
 
@@ -102,9 +121,8 @@ export function IngredientsList({ ingredients, stats }: IngredientsListProps) {
         }
     };
 
-    const complianceRate = stats.totalIngredients > 0 
-        ? Math.round((stats.lowRiskCount / stats.totalIngredients) * 100)
-        : 0;
+    const complianceRate =
+        stats.totalIngredients > 0 ? Math.round((stats.lowRiskCount / stats.totalIngredients) * 100) : 0;
 
     return (
         <div className="space-y-6">
@@ -113,7 +131,7 @@ export function IngredientsList({ ingredients, stats }: IngredientsListProps) {
                     <h1 className="text-3xl font-bold tracking-tight text-gold">Ingredient Management</h1>
                     <p className="text-muted-foreground">Manage your fragrance ingredient inventory and safety data</p>
                 </div>
-                <Button 
+                <Button
                     className="bg-gold text-gold-foreground hover:bg-gold/90"
                     onClick={() => router.push("/ingredients/create")}
                 >
@@ -145,9 +163,7 @@ export function IngredientsList({ ingredients, stats }: IngredientsListProps) {
                             </div>
                             <div className="flex-1 min-w-0">
                                 <p className="text-sm font-medium text-muted-foreground">Total Value</p>
-                                <p className="text-2xl font-bold">
-                                    ${stats.totalValue.toLocaleString()}
-                                </p>
+                                <p className="text-2xl font-bold">${stats.totalValue.toLocaleString()}</p>
                             </div>
                         </div>
                     </CardContent>
@@ -268,45 +284,49 @@ export function IngredientsList({ ingredients, stats }: IngredientsListProps) {
                                         </div>
                                         <div>
                                             <span className="font-medium">Cost:</span>
-                                            <br />${ingredient.cost ? parseFloat(ingredient.cost).toFixed(2) : "0.00"}/kg
+                                            <br />${ingredient.cost ? parseFloat(ingredient.cost).toFixed(2) : "0.00"}
+                                            /kg
                                         </div>
                                     </div>
 
                                     {ingredient.safetyNotes && (
                                         <div className="p-2 bg-amber-50 rounded-md dark:bg-amber-900/30">
-                                            <div className="text-xs font-medium text-amber-800 dark:text-amber-200 mb-1">Safety Notes:</div>
-                                            <div className="text-xs text-amber-700 dark:text-amber-300">{ingredient.safetyNotes}</div>
+                                            <div className="text-xs font-medium text-amber-800 dark:text-amber-200 mb-1">
+                                                Safety Notes:
+                                            </div>
+                                            <div className="text-xs text-amber-700 dark:text-amber-300">
+                                                {ingredient.safetyNotes}
+                                            </div>
                                         </div>
                                     )}
-
-                                    <div className="flex gap-2 pt-2">
-                                        <Button 
-                                            variant="outline" 
-                                            size="sm" 
-                                            className="flex-1"
-                                            onClick={() => router.push(`/ingredients/${ingredient.id}`)}
-                                        >
-                                            <Eye className="w-3 h-3 mr-1" />
-                                            View
-                                        </Button>
-                                        <Button 
-                                            variant="outline" 
-                                            size="sm" 
-                                            className="flex-1"
-                                            onClick={() => router.push(`/ingredients/${ingredient.id}/edit`)}
-                                        >
-                                            <Edit className="w-3 h-3 mr-1" />
-                                            Edit
-                                        </Button>
-                                        <Button 
-                                            variant="outline" 
-                                            size="sm" 
-                                            className="px-2"
-                                            onClick={() => handleDelete(ingredient.id, ingredient.name)}
-                                            disabled={isDeleting === ingredient.id}
-                                        >
-                                            <Trash2 className="w-3 h-3" />
-                                        </Button>
+                                    <div className="flex items-center justify-between pt-2 border-t">
+                                        <div className="flex space-x-2">
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                className="flex-1"
+                                                onClick={() => router.push(`/ingredients/${ingredient.id}`)}
+                                            >
+                                                <Eye className="w-3 h-3" />
+                                            </Button>
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                className="flex-1"
+                                                onClick={() => router.push(`/ingredients/${ingredient.id}/edit`)}
+                                            >
+                                                <Edit className="w-3 h-3" />
+                                            </Button>
+                                            <Button
+                                                variant="destructive"
+                                                size="sm"
+                                                className="px-2"
+                                                onClick={() => handleDelete(ingredient.id, ingredient.name)}
+                                                disabled={isDeleting === ingredient.id}
+                                            >
+                                                <Trash2 className="w-3 h-3" />
+                                            </Button>
+                                        </div>
                                     </div>
                                 </CardContent>
                             </Card>
@@ -318,14 +338,13 @@ export function IngredientsList({ ingredients, stats }: IngredientsListProps) {
                             <Beaker className="mx-auto h-12 w-12 text-muted-foreground" />
                             <h3 className="mt-2 text-sm font-semibold text-muted-foreground">No ingredients found</h3>
                             <p className="mt-1 text-sm text-muted-foreground">
-                                {searchTerm || volatilityFilter !== "all" 
+                                {searchTerm || volatilityFilter !== "all"
                                     ? "Try adjusting your search or filter criteria."
-                                    : "Get started by adding your first ingredient."
-                                }
+                                    : "Get started by adding your first ingredient."}
                             </p>
-                            {(!searchTerm && volatilityFilter === "all") && (
+                            {!searchTerm && volatilityFilter === "all" && (
                                 <div className="mt-6">
-                                    <Button 
+                                    <Button
                                         onClick={() => router.push("/ingredients/create")}
                                         className="bg-gold text-gold-foreground hover:bg-gold/90"
                                     >
@@ -426,7 +445,9 @@ export function IngredientsList({ ingredients, stats }: IngredientsListProps) {
                                                 .map((ingredient) => (
                                                     <div key={ingredient.id} className="flex justify-between text-sm">
                                                         <span>{ingredient.name}</span>
-                                                        <span className="font-medium">${parseFloat(ingredient.cost || "0").toFixed(2)}/kg</span>
+                                                        <span className="font-medium">
+                                                            ${parseFloat(ingredient.cost || "0").toFixed(2)}/kg
+                                                        </span>
                                                     </div>
                                                 ))}
                                         </div>
@@ -442,15 +463,11 @@ export function IngredientsList({ ingredients, stats }: IngredientsListProps) {
                                             </div>
                                             <div className="flex justify-between">
                                                 <span>Average Cost per Ingredient</span>
-                                                <span className="font-medium">
-                                                    ${stats.averageCost.toFixed(2)}
-                                                </span>
+                                                <span className="font-medium">${stats.averageCost.toFixed(2)}</span>
                                             </div>
                                             <div className="flex justify-between">
                                                 <span>Total Ingredients</span>
-                                                <span className="font-medium">
-                                                    {stats.totalIngredients}
-                                                </span>
+                                                <span className="font-medium">{stats.totalIngredients}</span>
                                             </div>
                                         </div>
                                     </div>

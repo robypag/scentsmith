@@ -17,8 +17,10 @@ export const metadata: Metadata = {
 export default async function FormulaePage() {
     const formulae = await loadFormulae();
     return (
-        <Suspense fallback={<FormulaePageSkeleton />}>
-            <FormulaeList formulae={formulae} />
-        </Suspense>
+        <div className="p-4">
+            <Suspense fallback={<FormulaePageSkeleton />}>
+                <FormulaeList formulae={formulae} />
+            </Suspense>
+        </div>
     );
 }

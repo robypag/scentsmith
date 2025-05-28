@@ -10,14 +10,11 @@ interface AppLayoutProps {
 
 function AppLayoutContent({ children }: AppLayoutProps) {
     return (
-        <div className="h-screen w-full flex flex-col overflow-hidden">
-            <Navbar />
-            <div className="flex flex-1 overflow-hidden relative">
-                <AppSidebar />
-                <main className="flex-1 overflow-auto bg-gray-50 dark:bg-gray-900">
-                    <div className="container mx-auto p-6 max-w-7xl">{children}</div>
-                </main>
-
+        <div className="flex h-screen overflow-hidden bg-background">
+            <AppSidebar />
+            <div className="flex-1 flex flex-col overflow-hidden">
+                <Navbar />
+                <main className="flex-1 overflow-auto p-6">{children}</main>
             </div>
         </div>
     );

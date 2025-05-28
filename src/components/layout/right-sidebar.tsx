@@ -4,6 +4,7 @@ import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTr
 import { useRightSidebar } from "@/hooks/use-sidebar-states";
 import { Button } from "@/components/ui/button";
 import { Bot, Sparkles, MessageSquare } from "lucide-react";
+import { ContextPanel } from "@/components/ai/context-panel";
 
 export function RightSidebar() {
     const { isOpen, setIsOpen } = useRightSidebar();
@@ -29,6 +30,12 @@ export function RightSidebar() {
                 <hr />
 
                 <div className="flex flex-col h-full bg-sidebar">
+                    {/* Context and Quick Actions Panel */}
+                    <div className="p-4 border-b border-sidebar-border space-y-4">
+                        <ContextPanel />
+                        {/*<QuickActions />*/}
+                    </div>
+
                     {/* Chat Area */}
                     <div className="flex-1 p-4 overflow-y-auto bg-sidebar">
                         <div className="space-y-4">
@@ -40,8 +47,8 @@ export function RightSidebar() {
                                 <div className="bg-sidebar-accent rounded-lg p-3 max-w-[240px]">
                                     <p className="text-sm text-sidebar-accent-foreground">
                                         Hello! I&apos;m your AI fragrance assistant. I can help you analyze perfumes,
-                                        find recommendations, and answer questions about fragrances. How can I assist
-                                        you today?
+                                        find recommendations, and answer questions about fragrances. Add context using
+                                        the &quot;Ask AI&quot; buttons on formula cards!
                                     </p>
                                 </div>
                             </div>
@@ -61,6 +68,9 @@ export function RightSidebar() {
                     <div className="border-t border-sidebar-border p-4 bg-sidebar">
                         <div className="bg-sidebar-accent/50 rounded-lg p-3 text-center">
                             <p className="text-sm text-sidebar-foreground/70">Chat interface coming soon...</p>
+                            <p className="text-xs text-sidebar-foreground/50 mt-1">
+                                Use the quick actions above or add context to get started
+                            </p>
                         </div>
                     </div>
                 </div>
