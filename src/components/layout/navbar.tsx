@@ -4,12 +4,19 @@ import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { MobileNav } from "./mobile-nav";
 import { useLeftSidebar } from "@/hooks/use-sidebar-states";
-import { headerNavigationItems } from "@/lib/mock-data/navigation";
-import { User, LogOut, Menu } from "lucide-react";
+import { LogOut, Menu, Plus, FileText, FolderOpen } from "lucide-react";
 import Link from "next/link";
 import { signOut } from "next-auth/react";
 import { NotificationCenter } from "@/components/notifications";
 import { RightSidebar } from "./right-sidebar";
+import {
+    NavigationMenu,
+    NavigationMenuContent,
+    NavigationMenuItem,
+    NavigationMenuLink,
+    NavigationMenuList,
+    NavigationMenuTrigger,
+} from "@/components/ui/navigation-menu";
 
 export function Navbar() {
     const { toggle: toggleLeftSidebar } = useLeftSidebar();
@@ -43,38 +50,71 @@ export function Navbar() {
                     </div>
                 </div>
 
-                {/* Center section - Navigation links */}
-                <nav className="hidden lg:flex items-center space-x-6 mx-6">
-                    {headerNavigationItems.map((item) => (
-                        <Link
-                            key={item.title}
-                            href={item.url}
-                            className="text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-yellow-600 dark:hover:text-yellow-400 transition-all duration-300 hover:drop-shadow-sm relative after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5 after:bg-gradient-to-r after:from-yellow-500 after:to-amber-500 hover:after:w-full after:transition-all after:duration-300"
-                        >
-                            {item.title}
-                        </Link>
-                    ))}
-                </nav>
+                {/* Center section - Quick Actions */}
+                <div className="hidden lg:flex items-center mx-6">
+                    <NavigationMenu>
+                        <NavigationMenuList>
+                            <NavigationMenuItem>
+                                <NavigationMenuTrigger className="bg-transparent hover:bg-yellow-50 dark:hover:bg-yellow-900/20 hover:text-yellow-600 dark:hover:text-yellow-400 transition-all duration-300">
+                                    Inventory
+                                </NavigationMenuTrigger>
+                                <NavigationMenuContent>
+                                    <div className="grid gap-3 p-4 w-[300px]">
+                                        <NavigationMenuLink asChild>
+                                            <Link
+                                                href="/ingredients/create"
+                                                className="flex items-center gap-3 hover:bg-yellow-50 dark:hover:bg-yellow-900/20 hover:text-yellow-600 dark:hover:text-yellow-400 rounded-md p-3 transition-colors"
+                                            >
+                                                <Plus className="h-4 w-4" />
+                                                <div>
+                                                    <div className="text-sm font-medium">Add Ingredient</div>
+                                                    <div className="text-xs text-muted-foreground">
+                                                        Add new ingredient to inventory
+                                                    </div>
+                                                </div>
+                                            </Link>
+                                        </NavigationMenuLink>
+                                        <NavigationMenuLink asChild>
+                                            <Link
+                                                href="/formulae/create"
+                                                className="flex items-center gap-3 hover:bg-yellow-50 dark:hover:bg-yellow-900/20 hover:text-yellow-600 dark:hover:text-yellow-400 rounded-md p-3 transition-colors"
+                                            >
+                                                <FileText className="h-4 w-4" />
+                                                <div>
+                                                    <div className="text-sm font-medium">Add Formula</div>
+                                                    <div className="text-xs text-muted-foreground">
+                                                        Create new fragrance formula
+                                                    </div>
+                                                </div>
+                                            </Link>
+                                        </NavigationMenuLink>
+                                        <NavigationMenuLink asChild>
+                                            <Link
+                                                href="/documents"
+                                                className="flex items-center gap-3 hover:bg-yellow-50 dark:hover:bg-yellow-900/20 hover:text-yellow-600 dark:hover:text-yellow-400 rounded-md p-3 transition-colors"
+                                            >
+                                                <FolderOpen className="h-4 w-4" />
+                                                <div>
+                                                    <div className="text-sm font-medium">Go To Document Management</div>
+                                                    <div className="text-xs text-muted-foreground">
+                                                        Manage your documents and files
+                                                    </div>
+                                                </div>
+                                            </Link>
+                                        </NavigationMenuLink>
+                                    </div>
+                                </NavigationMenuContent>
+                            </NavigationMenuItem>
+                        </NavigationMenuList>
+                    </NavigationMenu>
+                </div>
 
                 {/* Right section - Theme toggle, AI toggle and user menu */}
                 <div className="flex items-center space-x-2 ml-auto">
                     <NotificationCenter className="hover:shadow-md hover:shadow-yellow-500/20 hover:bg-yellow-50 dark:hover:bg-yellow-900/20" />
-
                     <div className="w-px h-6 bg-yellow-300 dark:bg-yellow-600 mx-2" />
-
                     <ThemeToggle />
-
                     <RightSidebar />
-
-                    <Button
-                        variant="luxury-ghost"
-                        size="icon"
-                        className="hover:shadow-md hover:shadow-yellow-500/20 hover:bg-yellow-50 dark:hover:bg-yellow-900/20"
-                    >
-                        <User className="h-4 w-4" />
-                        <span className="sr-only">User menu</span>
-                    </Button>
-
                     <Button
                         variant="luxury-ghost"
                         size="icon"

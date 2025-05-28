@@ -52,7 +52,7 @@ export function NotificationCenter({ className }: NotificationCenterProps) {
 
                 <hr />
 
-                <div className="mt-6 space-y-4">
+                <div className="mt-6 space-y-4 px-2">
                     {/* Active Jobs */}
                     {activeJobs.length > 0 && (
                         <div className="space-y-3">

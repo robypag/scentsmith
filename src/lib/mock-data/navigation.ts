@@ -1,4 +1,4 @@
-import { Settings, Brain, TextSearchIcon, TestTube, Beaker, BarChart3, Shield } from "lucide-react";
+import { Settings, TextSearchIcon, TestTube, Beaker, BarChart3, Shield } from "lucide-react";
 
 export const mainNavigationItems = [
     {
@@ -15,11 +15,6 @@ export const mainNavigationItems = [
         title: "Ingredients",
         url: "/ingredients",
         icon: Beaker,
-    },
-    {
-        title: "AI Assistant",
-        url: "/assistant",
-        icon: Brain,
     },
     {
         title: "Documents",

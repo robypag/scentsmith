@@ -1,6 +1,10 @@
 import { getServerSession } from "next-auth";
 import type { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
+import { db } from "@/lib/db";
+import { users } from "@/lib/db/schema";
+import { eq } from "drizzle-orm";
+import bcrypt from "bcryptjs";
 
 declare module "next-auth" {
     interface Session {
@@ -26,15 +30,36 @@ export const authOptions: NextAuthOptions = {
                     return null;
                 }
 
-                if (credentials.email === "demo@smellsmith.com" && credentials.password === "demo123") {
-                    return {
-                        id: "1",
-                        email: "demo@smellsmith.com",
-                        name: "Demo User",
-                    };
-                }
+                try {
+                    // Find user by email
+                    const user = await db
+                        .select()
+                        .from(users)
+                        .where(eq(users.email, credentials.email))
+                        .limit(1);
 
-                return null;
+                    if (user.length === 0) {
+                        return null;
+                    }
+
+                    const foundUser = user[0];
+
+                    // Verify password
+                    const isValidPassword = await bcrypt.compare(credentials.password, foundUser.password);
+
+                    if (!isValidPassword) {
+                        return null;
+                    }
+
+                    return {
+                        id: foundUser.id,
+                        email: foundUser.email,
+                        name: foundUser.name,
+                    };
+                } catch (error) {
+                    console.error("Auth error:", error);
+                    return null;
+                }
             },
         }),
     ],

@@ -6,7 +6,8 @@ import { DocumentsPageSkeleton } from "@/components/skeletons/documents-page-ske
 
 export const metadata: Metadata = {
     title: "Document Management - SmellSmith",
-    description: "Manage regulatory documents, safety data sheets, and research materials for your fragrance formulations.",
+    description:
+        "Manage regulatory documents, safety data sheets, and research materials for your fragrance formulations.",
     openGraph: {
         title: "Document Management - SmellSmith",
         description: "Centralized document management for fragrance development and compliance.",
@@ -14,15 +15,11 @@ export const metadata: Metadata = {
     },
 };
 
-async function DocumentsContent() {
+export default async function DocumentsPage() {
     const documents = await loadDocuments();
-    return <DocumentsManagement initialDocuments={documents} />;
-}
-
-export default function DocumentsPage() {
     return (
         <Suspense fallback={<DocumentsPageSkeleton />}>
-            <DocumentsContent />
+            <DocumentsManagement initialDocuments={documents} />
         </Suspense>
     );
 }

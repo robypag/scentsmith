@@ -2,10 +2,10 @@
 
 import { auth } from "@/auth";
 import { db } from "@/lib/db";
-import { documents, users } from "@/lib/db/schema";
+import { documents } from "@/lib/db/schema";
 import { queueManager } from "@/server/workers/lib/queue-manager";
 import { DocumentProcessingJobData } from "@/server/workers/lib/types";
-import { eq } from "drizzle-orm";
+
 import { nanoid } from "nanoid";
 
 export async function uploadDocumentAsync(formData: FormData) {
@@ -26,18 +26,6 @@ export async function uploadDocumentAsync(formData: FormData) {
             throw new Error("User must be authenticated");
         }
 
-        // Find or create user
-        let [user] = await db.select().from(users).where(eq(users.email, session.user.email));
-        if (!user) {
-            [user] = await db
-                .insert(users)
-                .values({
-                    email: session.user.email,
-                    name: session.user.name || "Demo User",
-                })
-                .returning();
-        }
-
         // Create document entry
         const [createdDocument] = await db
             .insert(documents)
@@ -48,7 +36,7 @@ export async function uploadDocumentAsync(formData: FormData) {
                     .split(",")
                     .map((tag) => tag.trim())
                     .filter(Boolean),
-                uploadedBy: user.id,
+                uploadedBy: session.user.id,
                 status: "pending",
             })
             .returning();
@@ -56,7 +44,7 @@ export async function uploadDocumentAsync(formData: FormData) {
         // Prepare job data
         const fileContent = Buffer.from(await file.arrayBuffer());
         const jobData: DocumentProcessingJobData = {
-            userId: user.id,
+            userId: session.user.id,
             jobId: nanoid(),
             createdAt: new Date(),
             documentId: createdDocument.id,

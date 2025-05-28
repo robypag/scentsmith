@@ -1,18 +1,11 @@
 import { NextRequest } from "next/server";
 import { auth } from "@/auth";
 import Redis from "ioredis";
-import { db } from "@/lib/db";
-import { users } from "@/lib/db/schema";
-import { eq } from "drizzle-orm";
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ userId: string }> }) {
     try {
         const session = await auth();
         const { userId } = await params;
-
-        console.log("[SSE API] SSE request for userId:", userId);
-        console.log("[SSE API] Session user:", session?.user?.id);
-        console.log("[SSE API] Session email:", session?.user?.email);
 
         // Verify user is authenticated
         if (!session?.user?.email) {
@@ -20,15 +13,21 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
             return new Response("Unauthorized", { status: 401 });
         }
 
-        // Get the actual user UUID from the database
+        console.log("[SSE API] SSE request for userId:", userId);
+        console.log("[SSE API] Session user:", session?.user?.id);
+        console.log("[SSE API] Session email:", session?.user?.email);
+        console.log("[SSE API] Starting SSE stream for user UUID:", session?.user?.id);
+
+        const user = session.user;
+
+        // Get the actual user UUID from the database --> not needed anymore, user ID is the UUID now
+        /**
         const [user] = await db.select().from(users).where(eq(users.email, session.user.email));
         if (!user) {
             console.log("[SSE API] User not found in database");
             return new Response("User not found", { status: 404 });
         }
-
-        console.log("[SSE API] Found user UUID:", user.id);
-        console.log("[SSE API] Starting SSE stream for user UUID:", user.id);
+        */
 
         // Create SSE response stream
         const stream = new ReadableStream({

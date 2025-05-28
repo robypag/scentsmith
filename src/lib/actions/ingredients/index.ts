@@ -2,7 +2,7 @@
 
 import { ingredients } from "../../db/schema";
 import { db } from "../../db";
-import { eq, ilike, or, asc, and } from "drizzle-orm";
+import { eq, ilike, or, asc, and, lte, count } from "drizzle-orm";
 import { Ingredient, NewIngredient } from "../../db/schema";
 import { auth } from "@/auth";
 import { revalidatePath } from "next/cache";
@@ -17,34 +17,34 @@ export async function getIngredients(): Promise<{ success: boolean; data?: Ingre
     }
 }
 
-export async function searchIngredients(searchTerm: string, volatilityFilter?: string): Promise<{ success: boolean; data?: Ingredient[]; error?: string }> {
+export async function searchIngredients(
+    searchTerm: string,
+    volatilityFilter?: string,
+): Promise<{ success: boolean; data?: Ingredient[]; error?: string }> {
     try {
         const conditions = [];
-        
         if (searchTerm) {
             conditions.push(
                 or(
                     ilike(ingredients.name, `%${searchTerm}%`),
                     ilike(ingredients.odorProfile, `%${searchTerm}%`),
-                    ilike(ingredients.casNumber, `%${searchTerm}%`)
-                )
+                    ilike(ingredients.casNumber, `%${searchTerm}%`),
+                ),
             );
         }
-        
         if (volatilityFilter && volatilityFilter !== "all") {
             conditions.push(eq(ingredients.volatility, volatilityFilter));
         }
-        
         let results;
         if (conditions.length === 0) {
             results = await db.select().from(ingredients).orderBy(asc(ingredients.name));
         } else {
-            results = await db.select()
+            results = await db
+                .select()
                 .from(ingredients)
                 .where(conditions.length === 1 ? conditions[0] : and(...conditions))
                 .orderBy(asc(ingredients.name));
         }
-        
         return { success: true, data: results };
     } catch (error) {
         console.error("Error searching ingredients:", error);
@@ -55,11 +55,11 @@ export async function searchIngredients(searchTerm: string, volatilityFilter?: s
 export async function getIngredientById(id: string): Promise<{ success: boolean; data?: Ingredient; error?: string }> {
     try {
         const ingredient = await db.select().from(ingredients).where(eq(ingredients.id, id)).limit(1);
-        
+
         if (ingredient.length === 0) {
             return { success: false, error: "Ingredient not found" };
         }
-        
+
         return { success: true, data: ingredient[0] };
     } catch (error) {
         console.error("Error fetching ingredient:", error);
@@ -67,7 +67,9 @@ export async function getIngredientById(id: string): Promise<{ success: boolean;
     }
 }
 
-export async function createIngredient(data: NewIngredient): Promise<{ success: boolean; data?: Ingredient; error?: string }> {
+export async function createIngredient(
+    data: NewIngredient,
+): Promise<{ success: boolean; data?: Ingredient; error?: string }> {
     try {
         const session = await auth();
         if (!session?.user?.id) {
@@ -75,7 +77,7 @@ export async function createIngredient(data: NewIngredient): Promise<{ success: 
         }
 
         const [newIngredient] = await db.insert(ingredients).values(data).returning();
-        
+
         revalidatePath("/ingredients");
         return { success: true, data: newIngredient };
     } catch (error) {
@@ -84,7 +86,10 @@ export async function createIngredient(data: NewIngredient): Promise<{ success: 
     }
 }
 
-export async function updateIngredient(id: string, data: Partial<NewIngredient>): Promise<{ success: boolean; data?: Ingredient; error?: string }> {
+export async function updateIngredient(
+    id: string,
+    data: Partial<NewIngredient>,
+): Promise<{ success: boolean; data?: Ingredient; error?: string }> {
     try {
         const session = await auth();
         if (!session?.user?.id) {
@@ -131,44 +136,84 @@ export async function deleteIngredient(id: string): Promise<{ success: boolean; 
     }
 }
 
-export async function getIngredientStats(): Promise<{ 
-    success: boolean; 
-    data?: { 
+export async function getIngredientStats(): Promise<{
+    success: boolean;
+    data?: {
         totalIngredients: number;
         highRiskCount: number;
         mediumRiskCount: number;
         lowRiskCount: number;
         averageCost: number;
         totalValue: number;
-    }; 
-    error?: string 
+    };
+    error?: string;
 }> {
     try {
         const allIngredients = await db.select().from(ingredients);
-        
+
         const stats = {
             totalIngredients: allIngredients.length,
-            highRiskCount: allIngredients.filter(ing => 
-                ing.safetyNotes?.toLowerCase().includes("phototoxic") || 
-                ing.safetyNotes?.toLowerCase().includes("allergen")
+            highRiskCount: allIngredients.filter(
+                (ing) =>
+                    ing.safetyNotes?.toLowerCase().includes("phototoxic") ||
+                    ing.safetyNotes?.toLowerCase().includes("allergen"),
             ).length,
-            mediumRiskCount: allIngredients.filter(ing => 
-                ing.safetyNotes?.toLowerCase().includes("sparingly") || 
-                ing.safetyNotes?.toLowerCase().includes("sensitizer")
+            mediumRiskCount: allIngredients.filter(
+                (ing) =>
+                    ing.safetyNotes?.toLowerCase().includes("sparingly") ||
+                    ing.safetyNotes?.toLowerCase().includes("sensitizer"),
             ).length,
-            lowRiskCount: allIngredients.filter(ing => 
-                !ing.safetyNotes?.toLowerCase().includes("phototoxic") && 
-                !ing.safetyNotes?.toLowerCase().includes("allergen") &&
-                !ing.safetyNotes?.toLowerCase().includes("sparingly") && 
-                !ing.safetyNotes?.toLowerCase().includes("sensitizer")
+            lowRiskCount: allIngredients.filter(
+                (ing) =>
+                    !ing.safetyNotes?.toLowerCase().includes("phototoxic") &&
+                    !ing.safetyNotes?.toLowerCase().includes("allergen") &&
+                    !ing.safetyNotes?.toLowerCase().includes("sparingly") &&
+                    !ing.safetyNotes?.toLowerCase().includes("sensitizer"),
             ).length,
-            averageCost: allIngredients.reduce((sum, ing) => sum + (parseFloat(ing.cost || "0")), 0) / allIngredients.length,
-            totalValue: allIngredients.reduce((sum, ing) => sum + (parseFloat(ing.cost || "0")), 0)
+            averageCost:
+                allIngredients.reduce((sum, ing) => sum + parseFloat(ing.cost || "0"), 0) / allIngredients.length,
+            totalValue: allIngredients.reduce((sum, ing) => sum + parseFloat(ing.cost || "0"), 0),
         };
-        
+
         return { success: true, data: stats };
     } catch (error) {
         console.error("Error fetching ingredient stats:", error);
         return { success: false, error: "Failed to fetch ingredient statistics" };
+    }
+}
+
+export async function getIngredientCountWithChange(compareDate: Date): Promise<{
+    success: boolean;
+    data?: { value: number; change: string };
+    error?: string;
+}> {
+    try {
+        // Get total current ingredient count
+        const [currentCountResult] = await db.select({ count: count() }).from(ingredients);
+
+        const currentCount = currentCountResult.count;
+
+        // Get ingredient count up to the comparison date
+        const [pastCountResult] = await db
+            .select({ count: count() })
+            .from(ingredients)
+            .where(lte(ingredients.createdAt, compareDate));
+
+        const pastCount = pastCountResult.count;
+
+        // Calculate the change
+        const change = currentCount - pastCount;
+        const changeString = change > 0 ? `+${change}` : change.toString();
+
+        return {
+            success: true,
+            data: {
+                value: currentCount,
+                change: changeString,
+            },
+        };
+    } catch (error) {
+        console.error("Error fetching ingredient count with change:", error);
+        return { success: false, error: "Failed to fetch ingredient count comparison" };
     }
 }

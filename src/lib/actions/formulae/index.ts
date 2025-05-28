@@ -2,7 +2,7 @@
 
 import { formulae, formulaTests, formulaIngredients, ingredients } from "../../db/schema";
 import { db } from "../../db";
-import { eq, inArray } from "drizzle-orm";
+import { eq, inArray, count } from "drizzle-orm";
 import { FormulaDTO } from "@/types/formula";
 import { CreateFormulaFormData, EditFormulaFormData } from "@/lib/validations/formula";
 import { auth } from "@/auth";
@@ -382,5 +382,40 @@ export async function loadAllIngredients() {
     } catch (error) {
         console.error("Error loading ingredients:", error);
         throw error instanceof Error ? error : new Error("Error loading ingredients");
+    }
+}
+
+export async function getFormulaeCountWithDrafts(): Promise<{
+    success: boolean;
+    data?: { value: number; change: string };
+    error?: string;
+}> {
+    try {
+        // Get total formula count
+        const [totalCountResult] = await db.select({ count: count() }).from(formulae);
+
+        const totalCount = totalCountResult.count;
+
+        // Get draft formula count
+        const [draftCountResult] = await db
+            .select({ count: count() })
+            .from(formulae)
+            .where(eq(formulae.status, "draft"));
+
+        const draftCount = draftCountResult.count;
+
+        // Format change as string (always positive since it's just the draft count)
+        const changeString = draftCount.toString();
+
+        return {
+            success: true,
+            data: {
+                value: totalCount,
+                change: changeString,
+            },
+        };
+    } catch (error) {
+        console.error("Error fetching formulae count with drafts:", error);
+        return { success: false, error: "Failed to fetch formulae count with drafts" };
     }
 }

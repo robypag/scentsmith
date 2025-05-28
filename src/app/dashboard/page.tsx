@@ -1,26 +1,61 @@
-import { dashboardStats } from "@/lib/mock-data/navigation";
-import { LuxuryCard, PremiumCard, Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { ChartCard, TopExpensiveIngredients } from "@/components/analytics";
 
-import { Sparkles, TrendingUp, Star, Award, Crown, Gem } from "lucide-react";
+import { Star, Award } from "lucide-react";
+import { getIngredientCountWithChange } from "@/lib/actions/ingredients";
+import { DashboardStat } from "@/types/dashboard-stat";
+import { getFormulaeCountWithDrafts } from "@/lib/actions/formulae";
+import { auth } from "@/auth";
+import { redirect } from "next/navigation";
 
-export default function Dashboard() {
+const getStatistics = async (): Promise<DashboardStat[]> => {
+    const lastMonth = new Date();
+    lastMonth.setMonth(lastMonth.getMonth() - 1);
+    const [ingredientsStat, formulaStat] = await Promise.all([
+        getIngredientCountWithChange(lastMonth),
+        getFormulaeCountWithDrafts(),
+    ]);
+    return [
+        {
+            id: "ingredients-stock",
+            title: "Ingredients in Stock",
+            change: ingredientsStat.data?.change || "No change",
+            value: ingredientsStat.data?.value || 0,
+            changeDescription: "From last month",
+            icon: <Award className="h-4 w-4 text-yellow-600 dark:text-yellow-400" />,
+        },
+        {
+            id: "formula-draft",
+            title: "Total Formulae",
+            change: formulaStat.data?.change || "No change",
+            value: formulaStat.data?.value || 0,
+            changeDescription: "to Approve",
+            icon: <Star className="h-4 w-4 text-yellow-600 dark:text-yellow-400" />,
+        },
+    ];
+};
+
+export default async function Dashboard() {
+    const session = await auth();
+
+    if (!session) {
+        redirect("/auth/signin");
+    }
+
+    const stats = await getStatistics();
     return (
         <div className="space-y-8 py-4">
             {/* Stats Grid */}
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-                {dashboardStats.map((stat, index) => (
-                    <LuxuryCard key={stat.id} className="group hover:scale-[1.02] transition-all duration-300">
+                {stats.map((stat) => (
+                    <Card key={stat.id} className="group hover:scale-[1.02] transition-all duration-300">
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
                             <CardTitle className="tracking-tight text-sm font-semibold text-gray-900 dark:text-white">
                                 {stat.title}
                             </CardTitle>
                             <div className="h-8 w-8 rounded-full bg-gradient-to-r from-yellow-100 to-amber-100 dark:from-yellow-900/30 dark:to-amber-900/30 flex items-center justify-center">
-                                {index === 0 && <Star className="h-4 w-4 text-yellow-600 dark:text-yellow-400" />}
-                                {index === 1 && <Award className="h-4 w-4 text-yellow-600 dark:text-yellow-400" />}
-                                {index === 2 && <Gem className="h-4 w-4 text-yellow-600 dark:text-yellow-400" />}
-                                {index === 3 && <Crown className="h-4 w-4 text-yellow-600 dark:text-yellow-400" />}
+                                {stat.icon}
                             </div>
                         </CardHeader>
                         <CardContent>
@@ -39,86 +74,22 @@ export default function Dashboard() {
                                 {stat.changeDescription}
                             </p>
                         </CardContent>
-                    </LuxuryCard>
+                    </Card>
                 ))}
             </div>
 
-            {/* Premium Features Section */}
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                <PremiumCard className="group">
-                    <CardHeader>
-                        <div className="flex items-center space-x-3">
-                            <div className="h-12 w-12 rounded-xl bg-gradient-to-r from-yellow-500 to-amber-500 flex items-center justify-center">
-                                <Sparkles className="h-6 w-6 text-white" />
-                            </div>
-                            <div>
-                                <CardTitle className="text-lg font-semibold text-gray-900 dark:text-white">
-                                    Formula Development
-                                </CardTitle>
-                                <p className="text-sm text-gray-600 dark:text-gray-400">AI-powered creation</p>
-                            </div>
-                        </div>
-                    </CardHeader>
-                    <CardContent>
-                        <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                            Create sophisticated formulae with AI assistance for ingredient optimization, cost analysis,
-                            and compliance checking.
-                        </p>
-                        <Button variant="luxury-outline" size="sm" className="w-full">
-                            Create Formula
-                        </Button>
-                    </CardContent>
-                </PremiumCard>
-
-                <PremiumCard className="group">
-                    <CardHeader>
-                        <div className="flex items-center space-x-3">
-                            <div className="h-12 w-12 rounded-xl bg-gradient-to-r from-rose-500 to-orange-600 flex items-center justify-center">
-                                <TrendingUp className="h-6 w-6 text-white" />
-                            </div>
-                            <div>
-                                <CardTitle className="text-lg font-semibold text-gray-900 dark:text-white">
-                                    Compliance Monitoring
-                                </CardTitle>
-                                <p className="text-sm text-gray-600 dark:text-gray-400">Regulatory tracking</p>
-                            </div>
-                        </div>
-                    </CardHeader>
-                    <CardContent>
-                        <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                            Ensure all formulae meet IFRA standards and regional regulations with automated compliance
-                            checking and alerts.
-                        </p>
-                        <Button variant="luxury-outline" size="sm" className="w-full">
-                            View Compliance
-                        </Button>
-                    </CardContent>
-                </PremiumCard>
-
-                <PremiumCard className="group">
-                    <CardHeader>
-                        <div className="flex items-center space-x-3">
-                            <div className="h-12 w-12 rounded-xl bg-gradient-to-r from-gray-400 to-yellow-300 flex items-center justify-center">
-                                <Award className="h-6 w-6 text-gray-900" />
-                            </div>
-                            <div>
-                                <CardTitle className="text-lg font-semibold text-gray-900 dark:text-white">
-                                    Ingredient Analytics
-                                </CardTitle>
-                                <p className="text-sm text-gray-600 dark:text-gray-400">Usage insights & trends</p>
-                            </div>
-                        </div>
-                    </CardHeader>
-                    <CardContent>
-                        <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                            Track ingredient usage patterns, cost optimization opportunities, and discover trending
-                            materials in perfumery.
-                        </p>
-                        <Button variant="luxury-outline" size="sm" className="w-full">
-                            View Analytics
-                        </Button>
-                    </CardContent>
-                </PremiumCard>
+            {/* Analytics Section */}
+            <div className="space-y-4">
+                <h2 className="text-2xl font-semibold tracking-tight text-gray-900 dark:text-white">Analytics</h2>
+                <div className="grid gap-6 md:grid-cols-1 lg:grid-cols-2">
+                    <ChartCard
+                        title="Top 10 Most Expensive Ingredients"
+                        description="Ingredient cost analysis for formula optimization"
+                        className="lg:col-span-2"
+                    >
+                        <TopExpensiveIngredients />
+                    </ChartCard>
+                </div>
             </div>
 
             {/* Recent Activity */}
