@@ -54,6 +54,8 @@ export function ContextPanel({ className }: ContextPanelProps) {
     };
 
     if (items.length === 0) {
+        return null;
+        /*
         return (
             <Card className={className}>
                 <CardHeader>
@@ -84,6 +86,7 @@ export function ContextPanel({ className }: ContextPanelProps) {
                 )}
             </Card>
         );
+        */
     }
 
     return (

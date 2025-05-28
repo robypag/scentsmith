@@ -29,8 +29,11 @@ export function TopExpensiveIngredientsChart({ data }: TopExpensiveIngredientsCh
         volatility: ingredient.volatility || "Unknown",
     }));
 
-    const CustomTooltip = ({ active, payload }: { 
-        active?: boolean; 
+    const CustomTooltip = ({
+        active,
+        payload,
+    }: {
+        active?: boolean;
         payload?: Array<{
             payload: {
                 fullName: string;
@@ -38,7 +41,7 @@ export function TopExpensiveIngredientsChart({ data }: TopExpensiveIngredientsCh
                 supplier: string;
                 volatility: string;
             };
-        }>; 
+        }>;
         label?: string;
     }) => {
         if (active && payload && payload.length) {
@@ -46,15 +49,9 @@ export function TopExpensiveIngredientsChart({ data }: TopExpensiveIngredientsCh
             return (
                 <div className="bg-white dark:bg-gray-800 p-3 rounded-lg shadow-lg border border-yellow-200 dark:border-yellow-700">
                     <p className="font-semibold text-gray-900 dark:text-white">{data.fullName}</p>
-                    <p className="text-yellow-600 dark:text-yellow-400">
-                        Cost: ${data.cost.toFixed(2)}
-                    </p>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
-                        Supplier: {data.supplier}
-                    </p>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
-                        Volatility: {data.volatility}
-                    </p>
+                    <p className="text-yellow-600 dark:text-yellow-400">Cost: ${data.cost.toFixed(2)}</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Supplier: {data.supplier}</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Volatility: {data.volatility}</p>
                 </div>
             );
         }
@@ -73,10 +70,7 @@ export function TopExpensiveIngredientsChart({ data }: TopExpensiveIngredientsCh
                         bottom: 60,
                     }}
                 >
-                    <CartesianGrid 
-                        strokeDasharray="3 3" 
-                        className="stroke-gray-200 dark:stroke-gray-700" 
-                    />
+                    <CartesianGrid strokeDasharray="3 3" className="stroke-gray-200 dark:stroke-gray-700" />
                     <XAxis
                         dataKey="name"
                         className="text-gray-600 dark:text-gray-400"

@@ -18,7 +18,7 @@ export function RightSidebar() {
                 </Button>
             </SheetTrigger>
 
-            <SheetContent side="right" className="w-96 p-0">
+            <SheetContent side="right" className="min-w-96 sm:min-w-[540px] p-0">
                 <SheetHeader className="border border-1">
                     <SheetTitle className="flex items-center gap-2">
                         <Bot className="h-5 w-5 text-sidebar-primary" />
@@ -29,9 +29,9 @@ export function RightSidebar() {
 
                 <hr />
 
-                <div className="flex flex-col h-full bg-sidebar">
+                <div className="flex flex-col h-full">
                     {/* Context and Quick Actions Panel */}
-                    <div className="p-4 border-b border-sidebar-border space-y-4">
+                    <div className="p-4">
                         <ContextPanel />
                         {/*<QuickActions />*/}
                     </div>
@@ -44,7 +44,7 @@ export function RightSidebar() {
                                 <div className="w-8 h-8 bg-sidebar-primary rounded-full flex items-center justify-center flex-shrink-0">
                                     <Sparkles className="h-4 w-4 text-sidebar-primary-foreground" />
                                 </div>
-                                <div className="bg-sidebar-accent rounded-lg p-3 max-w-[240px]">
+                                <div className="bg-sidebar-accent rounded-lg p-3 w-full">
                                     <p className="text-sm text-sidebar-accent-foreground">
                                         Hello! I&apos;m your AI fragrance assistant. I can help you analyze perfumes,
                                         find recommendations, and answer questions about fragrances. Add context using

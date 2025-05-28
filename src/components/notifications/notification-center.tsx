@@ -36,7 +36,7 @@ export function NotificationCenter({ className }: NotificationCenterProps) {
                 </Button>
             </SheetTrigger>
 
-            <SheetContent side="right" className="w-96 p-0">
+            <SheetContent side="right" className="min-w-96 sm:min-w-[540px] p-0">
                 <SheetHeader>
                     <SheetTitle className="flex items-center gap-2">
                         <Bell className="h-5 w-5 text-sidebar-primary" />
