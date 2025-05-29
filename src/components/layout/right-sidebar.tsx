@@ -4,7 +4,7 @@ import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTr
 import { useRightSidebar } from "@/hooks/use-sidebar-states";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Bot, Sparkles, MessageSquare, Send, User, StopCircle } from "lucide-react";
+import { Bot, Sparkles, MessageSquare, Send, User, StopCircle, RotateCcw } from "lucide-react";
 import { ContextPanel } from "@/components/ai/context-panel";
 import { useChat } from "@ai-sdk/react";
 import { AIContextItem, useAIContextStore, AIContextEntity } from "@/stores/ai-context";
@@ -35,6 +35,7 @@ export function RightSidebar() {
         handleInputChange,
         handleSubmit: originalHandleSubmit,
         status,
+        setMessages,
     } = useChat({
         api: "/api/chat",
     });
@@ -48,6 +49,10 @@ export function RightSidebar() {
                 context: additionalContext,
             },
         });
+    };
+
+    const handleResetChat = () => {
+        setMessages([]);
     };
 
     return (
@@ -182,7 +187,7 @@ export function RightSidebar() {
                                     value={input}
                                     onChange={handleInputChange}
                                     disabled={status !== "ready"}
-                                    className="min-h-[80px] resize-none pr-12 bg-sidebar-accent/50 border-sidebar-border focus:bg-sidebar-accent"
+                                    className="min-h-[80px] resize-none pr-20 bg-sidebar-accent/50 border-sidebar-border focus:bg-sidebar-accent"
                                     onKeyDown={(e) => {
                                         if (e.key === "Enter" && !e.shiftKey) {
                                             e.preventDefault();
@@ -191,27 +196,37 @@ export function RightSidebar() {
                                         }
                                     }}
                                 />
-                                <Button
-                                    type="submit"
-                                    size="icon"
-                                    disabled={status !== "ready" || !input.trim()}
-                                    className="absolute bottom-2 right-2 h-8 w-8"
-                                    variant="outline"
-                                >
-                                    <Send className="h-4 w-4" />
-                                    <span className="sr-only">Send message</span>
-                                </Button>
-                                {(status === "submitted" || status === "streaming") && (
+                                <div className="absolute bottom-2 right-2 flex gap-1">
+                                    {messages.length > 0 && (
+                                        <Button
+                                            type="button"
+                                            size="icon"
+                                            onClick={handleResetChat}
+                                            className="h-8 w-8"
+                                            variant="ghost"
+                                            title="Reset chat"
+                                        >
+                                            <RotateCcw className="h-4 w-4" />
+                                            <span className="sr-only">Reset chat</span>
+                                        </Button>
+                                    )}
                                     <Button
-                                        type="button"
+                                        type="submit"
                                         size="icon"
-                                        className="absolute bottom-2 right-2 h-8 w-8"
+                                        disabled={status !== "ready" || !input.trim()}
+                                        className="h-8 w-8"
                                         variant="outline"
                                     >
-                                        <StopCircle className="h-4 w-4" />
-                                        <span className="sr-only">Stop</span>
+                                        <Send className="h-4 w-4" />
+                                        <span className="sr-only">Send message</span>
                                     </Button>
-                                )}
+                                    {(status === "submitted" || status === "streaming") && (
+                                        <Button type="button" size="icon" className="h-8 w-8" variant="outline">
+                                            <StopCircle className="h-4 w-4" />
+                                            <span className="sr-only">Stop</span>
+                                        </Button>
+                                    )}
+                                </div>
                             </div>
                             <p className="text-xs text-sidebar-foreground/50 text-center">
                                 Press Enter to send, Shift+Enter for new line
