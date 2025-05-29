@@ -1,3 +1,5 @@
+import { FormulaDTO } from "@/types/formula";
+import { IngredientDTO } from "@/types/ingredient";
 import { create } from "zustand";
 
 export interface AIContextEntity {
@@ -101,26 +103,33 @@ export const useAIContextStore = create<AIContextStore>((set, get) => ({
     },
 }));
 
-// Helper function to convert formula to AI context entity
-export function formulaToAIContext(formula: {
-    id: string;
-    name: string;
-    description?: string;
-    status?: string;
-    version: number;
-    createdAt: string;
-    ingredients?: unknown[];
-}): AIContextEntity {
+export function formulaToAIContext(formula: FormulaDTO): AIContextEntity {
     return {
         id: formula.id,
         type: "formula",
         name: formula.name,
-        description: formula.description,
+        description: formula.description ?? "",
         metadata: {
             status: formula.status,
             version: formula.version,
             createdAt: formula.createdAt,
             ingredients: formula.ingredients?.length || 0,
+        },
+    };
+}
+
+export function ingredientToAIContext(ingredient: IngredientDTO): AIContextEntity {
+    return {
+        id: ingredient.id,
+        type: "ingredient",
+        name: ingredient.name,
+        description: ingredient.odorProfile ?? "",
+        metadata: {
+            createdAt: ingredient.createdAt,
+            volatility: ingredient.volatility,
+            cost: ingredient.cost,
+            casNumber: ingredient.casNumber,
+            ifraCategory: ingredient.ifraCategory,
         },
     };
 }
