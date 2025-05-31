@@ -1,13 +1,22 @@
 "use server";
 
 // createResource functionality moved to background workers
-import { documents, users } from "../../db/schema";
+import { documents, embeddings, resources } from "../../db/schema";
 import { db } from "../../db";
-import { eq } from "drizzle-orm";
+import { and, sql, eq } from "drizzle-orm";
 import { auth } from "@/auth";
 // LangChain loaders moved to background workers
 import { summarizeDocument } from "@/lib/ai/llm";
 import { DocumentDTO } from "@/types/document";
+import { generateEmbedding } from "@/lib/ai/embeddings";
+
+type DocumentSearchParams = {
+    query: string;
+    ingredientIds?: string[];
+    topics?: string[];
+    tags?: string[];
+    limit?: number;
+};
 
 export async function loadDocuments(): Promise<DocumentDTO[]> {
     try {
@@ -49,17 +58,7 @@ export async function uploadFile(title: string, type: string, tags: string, file
         }
 
         // Find or create user by email
-        let [user] = await db.select().from(users).where(eq(users.email, session.user.email));
-        if (!user) {
-            // Create user if not exists (for demo purposes)
-            [user] = await db
-                .insert(users)
-                .values({
-                    email: session.user.email,
-                    name: session.user.name || "Demo User",
-                })
-                .returning();
-        }
+        const user = session?.user;
 
         // Convert File to Buffer for document loaders
         const arrayBuffer = await file.arrayBuffer();
@@ -106,4 +105,35 @@ export async function uploadFile(title: string, type: string, tags: string, file
     } catch (error) {
         throw error instanceof Error ? error : new Error("Error uploading file, please try again.");
     }
+}
+
+export async function searchDocuments({ query, ingredientIds, topics, tags, limit = 5 }: DocumentSearchParams) {
+    const queryEmbedding = await generateEmbedding(query);
+    const conditions = [];
+    if (ingredientIds?.length) {
+        conditions.push(sql`${embeddings.chemicals} && ${sql`ARRAY[${sql.join(ingredientIds)}]::uuid[]`}`);
+    }
+    if (topics?.length) {
+        conditions.push(sql`${embeddings.topics} && ${sql`ARRAY[${sql.join(topics)}]::text[]`}`);
+    }
+    if (tags?.length) {
+        conditions.push(sql`${embeddings.tags} && ${sql`ARRAY[${sql.join(tags)}]::text[]`}`);
+    }
+    const results = await db
+        .select({
+            content: embeddings.content,
+            topics: embeddings.topics,
+            tags: embeddings.tags,
+            chemicals: embeddings.chemicals,
+            pageNumber: resources.pageNumber,
+            documentTitle: documents.title,
+        })
+        .from(embeddings)
+        .innerJoin(resources, eq(embeddings.resourceId, resources.id))
+        .innerJoin(documents, eq(resources.documentId, documents.id))
+        .where(and(...conditions)) // safe: empty `and()` resolves to true
+        .orderBy(sql`${embeddings.embedding} <#> ${sql`[${queryEmbedding.join(",")}]`}`) // cosine distance
+        .limit(limit);
+
+    return results;
 }

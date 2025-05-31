@@ -7,3 +7,9 @@ export const ingredientSchema = createSelectSchema(ingredients);
 
 // Export the inferred TypeScript type
 export type IngredientDTO = z.infer<typeof ingredientSchema>;
+
+// For document processing:
+export type EmbeddingChemicalEntry = {
+    id: string;
+    searchTerms: string[];
+};

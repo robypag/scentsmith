@@ -1,7 +1,7 @@
 import { Worker, Job } from "bullmq";
 import { getRedisClient } from "./lib/redis-client";
 import { DocumentProcessingJobData, QueueNames, JobProgress } from "./lib/types";
-import { summarizeDocument } from "@/lib/ai/llm";
+import { extractDocumentMetadata, summarizeDocument } from "@/lib/ai/llm";
 import { generateEmbeddings } from "@/lib/ai/embeddings";
 import { db } from "@/lib/db";
 import { documents, resources, embeddings } from "@/lib/db/schema";
@@ -12,6 +12,7 @@ import { DocxLoader } from "@langchain/community/document_loaders/fs/docx";
 import { writeFileSync, unlinkSync } from "fs";
 import { join } from "path";
 import { tmpdir } from "os";
+import { tagChunk, preloadIngredients } from "@/lib/ai/llm";
 
 class DocumentProcessorWorker {
     private worker: Worker;
@@ -83,6 +84,15 @@ class DocumentProcessorWorker {
             const dataUrl = `data:${mimeType};base64,${base64String}`;
             const summary = await summarizeDocument(dataUrl, mimeType);
 
+            // Step 2.5: Extract Metadata:
+            await this.updateProgress(job, {
+                percentage: 40,
+                message: "Extracting relevant metadata...",
+                step: "metadata_extraction",
+                timestamp: new Date(),
+            });
+            const metadata = await extractDocumentMetadata(textContent);
+
             // Step 3: Update document with summary
             await this.updateProgress(job, {
                 percentage: 50,
@@ -95,6 +105,7 @@ class DocumentProcessorWorker {
                 .update(documents)
                 .set({
                     summarization: summary,
+                    metadata,
                     status: "processing",
                 })
                 .where(eq(documents.id, documentId));
@@ -112,7 +123,7 @@ class DocumentProcessorWorker {
             // Step 5: Create resource and store embeddings
             await this.updateProgress(job, {
                 percentage: 90,
-                message: "Storing embeddings...",
+                message: "Tag chunks and storing embeddings...",
                 step: "embedding_storage",
                 timestamp: new Date(),
             });
@@ -132,6 +143,9 @@ class DocumentProcessorWorker {
                 resourceId: resource.id,
                 content: item.content,
                 embedding: item.embedding,
+                topics: [],
+                tags: [],
+                chemicals: [],
             }));
 
             await db.insert(embeddings).values(embeddingInserts);
@@ -159,10 +173,8 @@ class DocumentProcessorWorker {
             };
         } catch (err) {
             console.error("Document processing failed:", err);
-
             // Mark document as failed
             await db.update(documents).set({ status: "failed" }).where(eq(documents.id, documentId));
-
             throw err;
         }
     }

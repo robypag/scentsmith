@@ -1,6 +1,6 @@
 {
-  "id": "45daf074-e48f-4eb1-9a8e-e62cbb165ddc",
-  "prevId": "b1e26219-b2d0-4211-957d-a6fe86b6a844",
+  "id": "4c4cbc4d-2790-44fb-82f8-c764de17e488",
+  "prevId": "45daf074-e48f-4eb1-9a8e-e62cbb165ddc",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -311,6 +311,27 @@
           "type": "vector(1536)",
           "primaryKey": false,
           "notNull": true
+        },
+        "topics": {
+          "name": "topics",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "ARRAY[]::text[]"
+        },
+        "tags": {
+          "name": "tags",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "ARRAY[]::text[]"
+        },
+        "chemicals": {
+          "name": "chemicals",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "ARRAY[]::text[]"
         }
       },
       "indexes": {

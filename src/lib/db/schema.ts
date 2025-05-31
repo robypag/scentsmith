@@ -109,7 +109,7 @@ export const documents = pgTable("documents", {
         .references(() => users.id)
         .notNull(),
     fileUrl: text("file_url"),
-    metadata: jsonb("metadata"),
+    metadata: jsonb("metadata").default({}),
     tags: text("tags").array(),
     summarization: text("summarization"),
     status: text("status").default("pending").notNull(), // pending, processing, ready, failed
@@ -139,6 +139,15 @@ export const embeddings = pgTable(
         resourceId: uuid("resource_id").references(() => resources.id, { onDelete: "cascade" }),
         content: text("content").notNull(),
         embedding: vector("embedding", { dimensions: 1536 }).notNull(),
+        topics: text("topics")
+            .array()
+            .default(sql`ARRAY[]::text[]`),
+        tags: text("tags")
+            .array()
+            .default(sql`ARRAY[]::text[]`),
+        chemicals: text("chemicals")
+            .array()
+            .default(sql`ARRAY[]::text[]`),
     },
     (table) => [index("embeddingIndex").using("hnsw", table.embedding.op("vector_cosine_ops"))],
 );
