@@ -12,7 +12,7 @@ import { DocxLoader } from "@langchain/community/document_loaders/fs/docx";
 import { writeFileSync, unlinkSync } from "fs";
 import { join } from "path";
 import { tmpdir } from "os";
-import { tagChunk, preloadIngredients } from "@/lib/ai/llm";
+//import { tagChunk, preloadIngredients } from "@/lib/ai/llm";
 
 class DocumentProcessorWorker {
     private worker: Worker;

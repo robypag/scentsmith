@@ -1,3 +1,4 @@
+import { DocumentDTO } from "@/types/document";
 import { FormulaDTO } from "@/types/formula";
 import { IngredientDTO } from "@/types/ingredient";
 import { create } from "zustand";
@@ -130,6 +131,20 @@ export function ingredientToAIContext(ingredient: IngredientDTO): AIContextEntit
             cost: ingredient.cost,
             casNumber: ingredient.casNumber,
             ifraCategory: ingredient.ifraCategory,
+        },
+    };
+}
+
+export function documentToAIContext(document: DocumentDTO): AIContextEntity {
+    return {
+        id: document.id,
+        type: "document",
+        name: document.title,
+        description: document.summarization ?? "",
+        metadata: {
+            createdAt: document.createdAt,
+            type: document.type,
+            status: document.status,
         },
     };
 }

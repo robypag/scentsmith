@@ -169,8 +169,8 @@ export function DocumentViewer({ document, onClose }: DocumentViewerProps) {
 
                         <TabsContent value="search" className="flex-1 px-6 pb-6 mt-4">
                             <div className="space-y-4">
-                                <SemanticSearch />
-                                <RelatedDocuments />
+                                <SemanticSearch documentId={document.id} />
+                                <RelatedDocuments documentId={document.id} />
                             </div>
                         </TabsContent>
                     </Tabs>

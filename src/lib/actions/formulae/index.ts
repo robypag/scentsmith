@@ -102,11 +102,14 @@ export async function loadFormulae(): Promise<FormulaDTO[]> {
     }
 }
 
-export async function loadFormulaById(id: string): Promise<FormulaDTO> {
+export async function loadFormulaById(id: string): Promise<FormulaDTO | null> {
     try {
         const [formula] = await db.select().from(formulae).where(eq(formulae.id, id)).limit(1);
 
-        if (!formula) throw new Error("Formula not found");
+        if (!formula) {
+            console.error("[LLM] - Formula tool failed, no formula found");
+            return null;
+        }
 
         const rawIngredients = await db
             .select({
@@ -173,7 +176,9 @@ export async function loadFormulaById(id: string): Promise<FormulaDTO> {
             tests: testsWithTypedResults,
         };
     } catch (error) {
-        throw error instanceof Error ? error : new Error("Error, please try again.");
+        console.error("[LLM] Error fetching formula details:", error);
+        return null;
+        // throw error instanceof Error ? error : new Error("Error, please try again.");
     }
 }
 
@@ -237,6 +242,9 @@ export async function createFormula(
 
         // Load the complete formula with ingredients and tests
         const completeFormula = await loadFormulaById(result.id);
+        if (!completeFormula) {
+            throw new Error();
+        }
 
         revalidatePath("/formulae");
         return { success: true, data: completeFormula };
@@ -325,6 +333,9 @@ export async function updateFormula(
 
         // Load the complete updated formula
         const completeFormula = await loadFormulaById(result.id);
+        if (!completeFormula) {
+            throw new Error();
+        }
 
         revalidatePath("/formulae");
         revalidatePath(`/formulae/${data.id}`);

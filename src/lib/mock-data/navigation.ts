@@ -36,79 +36,7 @@ export const settingsNavigationItems = [
     },
 ];
 
-export const headerNavigationItems = [
-    {
-        title: "Discover",
-        url: "/discover",
-    },
-    {
-        title: "Compare",
-        url: "/compare",
-    },
-    {
-        title: "Trending",
-        url: "/trending",
-    },
-    {
-        title: "Community",
-        url: "/community",
-    },
-];
 
-export const dashboardStats = [
-    {
-        id: "active-formulae",
-        title: "Active Formulae",
-        value: 124,
-        change: "+8",
-        changeDescription: "new this month",
-    },
-    {
-        id: "ingredients-stock",
-        title: "Ingredients in Stock",
-        value: 347,
-        change: "+23",
-        changeDescription: "from last month",
-    },
-    {
-        id: "compliance-alerts",
-        title: "Compliance Alerts",
-        value: 3,
-        change: "-5",
-        changeDescription: "resolved this week",
-    },
-    {
-        id: "expiring-formulae",
-        title: "Expiring Soon",
-        value: 12,
-        change: "",
-        changeDescription: "Next 30 days",
-    },
-];
-
-export const featureCards = [
-    {
-        id: "formula-development",
-        title: "Formula Development",
-        description: "Create and manage perfume formulae with precision",
-        content: "Build complex formulae with ingredient tracking, percentage calculations, and compliance checks.",
-        href: "/formulae",
-    },
-    {
-        id: "compliance-monitoring",
-        title: "Compliance Monitoring",
-        description: "Ensure regulatory compliance across all markets",
-        content: "AI-powered compliance checking against IFRA standards and regional regulations.",
-        href: "/compliance",
-    },
-    {
-        id: "ingredient-insights",
-        title: "Ingredient Insights",
-        description: "Advanced analytics on ingredient usage and trends",
-        content: "Track ingredient costs, usage patterns, and discover optimization opportunities.",
-        href: "/ingredients",
-    },
-];
 
 export const mockUser = {
     id: "1",

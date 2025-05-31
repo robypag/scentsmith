@@ -6,16 +6,14 @@ import React from "react";
 
 interface DocumentsListProps {
     documents: DocumentDTO[];
-    getDocumentTypeBadge: (type: string) => React.ReactElement;
-    onDelete: (documentId: string) => void;
 }
 
-export function DocumentsList({ documents, getDocumentTypeBadge, onDelete }: DocumentsListProps) {
+export function DocumentsList({ documents }: DocumentsListProps) {
     return (
         <>
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                 {documents.map((document) => (
-                    <DocumentCard key={document.id} document={document} getDocumentTypeBadge={getDocumentTypeBadge} onDelete={onDelete} />
+                    <DocumentCard key={document.id} document={document} />
                 ))}
             </div>
 

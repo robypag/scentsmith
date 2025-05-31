@@ -3,7 +3,7 @@
 // createResource functionality moved to background workers
 import { documents, embeddings, resources } from "../../db/schema";
 import { db } from "../../db";
-import { and, sql, eq } from "drizzle-orm";
+import { and, sql, eq, cosineDistance, desc, gt, inArray } from "drizzle-orm";
 import { auth } from "@/auth";
 // LangChain loaders moved to background workers
 import { summarizeDocument } from "@/lib/ai/llm";
@@ -11,6 +11,7 @@ import { DocumentDTO } from "@/types/document";
 import { generateEmbedding } from "@/lib/ai/embeddings";
 
 type DocumentSearchParams = {
+    documentIds?: string[];
     query: string;
     ingredientIds?: string[];
     topics?: string[];
@@ -107,9 +108,22 @@ export async function uploadFile(title: string, type: string, tags: string, file
     }
 }
 
-export async function searchDocuments({ query, ingredientIds, topics, tags, limit = 5 }: DocumentSearchParams) {
+export async function searchDocuments({
+    documentIds,
+    query,
+    ingredientIds,
+    topics,
+    tags,
+    limit = 5,
+}: DocumentSearchParams) {
     const queryEmbedding = await generateEmbedding(query);
+    const similarity = sql<number>`1 - (${cosineDistance(embeddings.embedding, queryEmbedding)})`;
+
     const conditions = [];
+    // If provided, search only within the specified document
+    if (documentIds?.length) {
+        conditions.push(inArray(resources.documentId, documentIds));
+    }
     if (ingredientIds?.length) {
         conditions.push(sql`${embeddings.chemicals} && ${sql`ARRAY[${sql.join(ingredientIds)}]::uuid[]`}`);
     }
@@ -119,9 +133,13 @@ export async function searchDocuments({ query, ingredientIds, topics, tags, limi
     if (tags?.length) {
         conditions.push(sql`${embeddings.tags} && ${sql`ARRAY[${sql.join(tags)}]::text[]`}`);
     }
+
+    conditions.push(gt(similarity, 0.3));
+
     const results = await db
         .select({
             content: embeddings.content,
+            similarity,
             topics: embeddings.topics,
             tags: embeddings.tags,
             chemicals: embeddings.chemicals,
@@ -132,8 +150,61 @@ export async function searchDocuments({ query, ingredientIds, topics, tags, limi
         .innerJoin(resources, eq(embeddings.resourceId, resources.id))
         .innerJoin(documents, eq(resources.documentId, documents.id))
         .where(and(...conditions)) // safe: empty `and()` resolves to true
-        .orderBy(sql`${embeddings.embedding} <#> ${sql`[${queryEmbedding.join(",")}]`}`) // cosine distance
+        .orderBy((t) => desc(t.similarity))
         .limit(limit);
 
     return results;
+}
+
+export async function performSemanticSearch(query: string, limit: number = 5, documentId?: string) {
+    try {
+        if (!query.trim()) {
+            return [];
+        }
+
+        const results = await searchDocuments({ documentIds: documentId ? [documentId] : [], query, limit });
+        return results.map((result) => ({
+            content: result.content,
+            topics: result.topics || [],
+            tags: result.tags || [],
+            chemicals: result.chemicals || [],
+            pageNumber: result.pageNumber,
+            documentTitle: result.documentTitle,
+            similarity: result.similarity,
+        }));
+    } catch (error) {
+        console.error("Semantic search error:", error);
+        throw error instanceof Error ? error : new Error("Failed to perform semantic search");
+    }
+}
+
+export async function findRelatedDocuments(documentId: string, limit: number = 3) {
+    try {
+        // Get the document to find related ones
+        const document = await loadDocument(documentId);
+        if (!document || !document.summarization) {
+            return [];
+        }
+
+        // Use the document's summarization as the search query
+        const results = await searchDocuments({
+            query: document.summarization,
+            limit: limit + 1, // Get one extra to filter out the current document
+        });
+
+        // Filter out the current document and return related ones
+        return results
+            .filter((result) => result.documentTitle !== document.title)
+            .slice(0, limit)
+            .map((result, index) => ({
+                id: `related-${index}`, // In a real implementation, this would be the actual document ID
+                title: result.documentTitle,
+                similarity: Math.round((1 - (index + 1) * 0.1) * 100), // Mock similarity percentage
+                content: result.content.substring(0, 200) + "...",
+                pageNumber: result.pageNumber,
+            }));
+    } catch (error) {
+        console.error("Related documents search error:", error);
+        return [];
+    }
 }

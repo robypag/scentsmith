@@ -186,7 +186,7 @@ export function RightSidebar() {
                                     placeholder="Ask about fragrances, get recommendations, or analyze compositions..."
                                     value={input}
                                     onChange={handleInputChange}
-                                    disabled={status !== "ready"}
+                                    disabled={status === "submitted" || status === "streaming"}
                                     className="min-h-[80px] resize-none pr-20 bg-sidebar-accent/50 border-sidebar-border focus:bg-sidebar-accent"
                                     onKeyDown={(e) => {
                                         if (e.key === "Enter" && !e.shiftKey) {

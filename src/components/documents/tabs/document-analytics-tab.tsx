@@ -3,14 +3,14 @@ import { Button } from "@/components/ui/button";
 import { StatsCard } from "@/components/ui/stats-card";
 import { FileText, Calendar, Eye } from "lucide-react";
 import { DocumentDTO } from "@/types/document";
+import { getDocumentTypeBadge } from "@/components/documents/document-badges";
 import Link from "next/link";
 
 interface DocumentAnalyticsTabProps {
     documents: DocumentDTO[];
-    getDocumentTypeBadge: (type: string) => React.ReactElement;
 }
 
-export function DocumentAnalyticsTab({ documents, getDocumentTypeBadge }: DocumentAnalyticsTabProps) {
+export function DocumentAnalyticsTab({ documents }: DocumentAnalyticsTabProps) {
     return (
         <div className="space-y-4">
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">

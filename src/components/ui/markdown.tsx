@@ -4,6 +4,6 @@ import remarkGfm from "remark-gfm";
 
 export const MemoizedReactMarkdown: FC<Options> = memo(
     (props) => <ReactMarkdown {...props} remarkPlugins={[remarkGfm]} />,
-    (prevProps, nextProps) => prevProps.children === nextProps.children && prevProps.className === nextProps.className,
+    (prevProps, nextProps) => prevProps.children === nextProps.children,
 );
 MemoizedReactMarkdown.displayName = "MemoizedReactMarkdown";

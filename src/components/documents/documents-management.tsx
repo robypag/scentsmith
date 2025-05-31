@@ -2,9 +2,8 @@
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DocumentBrowseTab, DocumentUploadTab, DocumentAnalyticsTab } from "@/components/documents/tabs";
-import { getDocumentTypeBadge } from "@/components/documents/document-badges";
-import { useState, useMemo } from "react";
-import { deleteDocument, loadDocuments } from "@/lib/actions/documents";
+import { useState } from "react";
+import { loadDocuments } from "@/lib/actions/documents";
 import { DocumentDTO } from "@/types/document";
 
 interface DocumentsManagementProps {
@@ -12,25 +11,10 @@ interface DocumentsManagementProps {
 }
 
 export function DocumentsManagement({ initialDocuments }: DocumentsManagementProps) {
-    const [searchTerm, setSearchTerm] = useState("");
-    const [typeFilter, setTypeFilter] = useState("all");
     const [documents, setDocuments] = useState<DocumentDTO[]>(initialDocuments);
     const [error, setError] = useState<string | null>(null);
 
-    const filteredDocuments = useMemo(() => {
-        return documents.filter((doc) => {
-            const matchesSearch =
-                doc.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                doc.summarization?.toLowerCase().includes(searchTerm.toLowerCase());
-            const matchesType = typeFilter === "all" || doc.type === typeFilter;
-            return matchesSearch && matchesType;
-        });
-    }, [documents, searchTerm, typeFilter]);
 
-    const handleSearch = (search: string, type: string) => {
-        setSearchTerm(search);
-        setTypeFilter(type);
-    };
 
     // Function to refresh documents after upload
     const refreshDocuments = async () => {
@@ -43,15 +27,7 @@ export function DocumentsManagement({ initialDocuments }: DocumentsManagementPro
         }
     };
 
-    // Function to handle document deletion
-    const handleDelete = async (documentId: string) => {
-        try {
-            await deleteDocument(documentId);
-            await refreshDocuments(); // Refresh the list after deletion
-        } catch (err) {
-            setError(err instanceof Error ? err.message : "Failed to delete document");
-        }
-    };
+
 
     return (
         <div className="p-4 space-y-6">
@@ -80,10 +56,7 @@ export function DocumentsManagement({ initialDocuments }: DocumentsManagementPro
 
                 <TabsContent value="browse" className="space-y-4">
                     <DocumentBrowseTab
-                        filteredDocuments={filteredDocuments}
-                        getDocumentTypeBadge={getDocumentTypeBadge}
-                        onSearch={handleSearch}
-                        onDelete={handleDelete}
+                        documents={documents}
                     />
                 </TabsContent>
 
@@ -92,7 +65,7 @@ export function DocumentsManagement({ initialDocuments }: DocumentsManagementPro
                 </TabsContent>
 
                 <TabsContent value="analytics" className="space-y-4">
-                    <DocumentAnalyticsTab documents={documents} getDocumentTypeBadge={getDocumentTypeBadge} />
+                    <DocumentAnalyticsTab documents={documents} />
                 </TabsContent>
             </Tabs>
         </div>

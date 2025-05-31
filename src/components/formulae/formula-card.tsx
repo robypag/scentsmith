@@ -33,15 +33,7 @@ export function FormulaCard({
     const isInContext = hasEntity(formula.id);
 
     const handleAskAI = () => {
-        const contextEntity = formulaToAIContext({
-            id: formula.id,
-            name: formula.name,
-            description: formula.description || undefined,
-            status: formula.status || undefined,
-            version: typeof formula.version === "string" ? parseInt(formula.version) || 0 : formula.version || 0,
-            createdAt: formula.createdAt.toISOString(),
-            ingredients: formula.ingredients || [],
-        });
+        const contextEntity = formulaToAIContext(formula);
         addContext(contextEntity, "formula-card");
         setRightSidebarOpen(true);
     };

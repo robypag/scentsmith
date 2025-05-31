@@ -11,14 +11,34 @@ export async function POST(req: Request) {
     const systemPrompt = context
         ? `${GENERAL_CHAT_PROMPT}\n<context>${JSON.stringify(context)}</context>\n`
         : GENERAL_CHAT_PROMPT;
+
+    console.log(systemPrompt);
+
     const result = streamText({
-        model: openai("gpt-4.1-mini"),
+        model: openai("gpt-4o"),
         system: systemPrompt,
         messages,
         temperature: 0.2,
         maxTokens: 2000,
         maxSteps: 5,
+        maxRetries: 2,
         tools: getTools(),
+        onError: (error) => {
+            console.error("Error streaming text:", error);
+        },
     });
-    return result.toDataStreamResponse();
+    return result.toDataStreamResponse({
+        getErrorMessage: (error) => {
+            if (error == null) {
+                return "unknown error";
+            }
+            if (typeof error === "string") {
+                return error;
+            }
+            if (error instanceof Error) {
+                return error.message;
+            }
+            return JSON.stringify(error);
+        },
+    });
 }
